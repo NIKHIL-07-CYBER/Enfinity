@@ -21,6 +21,7 @@
    - [cognateSimilarity()](#cognatesimilarity)
    - [isFalseCognate()](#isfalsecognate)
    - [fetchCognate()](#fetchcognate)
+   - [fetchDefinition()](#fetchdefinition)
    - [detectUserLanguage()](#detectuserlanguage)
 6. [Data Files](#data-files)
 7. [Integration Guide for Teammates](#integration-guide-for-teammates)
@@ -354,6 +355,26 @@ Returns `"traduccion (es)"` format or `null` if any layer rejects.
 
 ---
 
+---
+
+### `fetchDefinition(word)`
+
+**File**: `src/utils/definitionFetcher.ts`
+
+Fetches a meaning for any English word with a robust fallback strategy to ensure uptime during the hackathon.
+
+```typescript
+async function fetchDefinition(word: string): Promise<string>
+```
+
+| Layer | Source | Reliability | Description |
+|-------|--------|-------------|-------------|
+| 1 | Free Dictionary API | High | Primary source for rich definitions and examples. |
+| 2 | compromise.js fallback | Offline | Local POS-based hints (e.g., "A word describing a quality"). |
+| 3 | Constant fallback | 100% | Fail-safe: "A challenging word used in this context." |
+
+---
+
 ### `detectUserLanguage()`
 
 **File**: `src/utils/cognateMapper.ts`
@@ -485,28 +506,17 @@ Until Dev D is ready, `adaptationEngine.ts` uses a stub. Look for the `// uncomm
 
 ## Verification
 
-Run the Phase 1 verification script to confirm everything is working:
-
+### Phase 1 (Core Utilities)
 ```bash
 node verify-phase1.mjs
 ```
+Expected: `12 passed, 0 failed` — ensures regex, similarity, and data integrity.
 
-Expected output (all 12 checks must pass):
-
-| # | Check | Expected |
-|---|-------|----------|
-| 1 | `getDifficultWords("The ubiquitous phenomenon")` | `["ubiquitous", "phenomenon"]` |
-| 2 | `getDifficultWords("The cat sat on the mat")` | `[]` |
-| 3 | `cognateSimilarity("flame", "flamme")` | `≥ 0.80` |
-| 4 | `cognateSimilarity("nation", "nacion")` | `≥ 0.80` |
-| 5 | `isFalseCognate("embarrassed", "es")` | `true` |
-| 6 | `isFalseCognate("nation", "es")` | `false` |
-| 7 | `falseCognates.json` ES list | `≥ 50 entries` |
-| 8 | `acronyms.json` | `≥ 50 entries` |
-| 9 | `acronyms["NLP"]` | `"Natural Language Processing"` |
-| 10 | `daleChallWords.json` | `≥ 2900 words` |
-| 11 | `"cat"` is in easy list | `true` |
-| 12 | `"ubiquitous"` is NOT in easy list | `true` |
+### Phase 2 (Integration & Decision Tree)
+```bash
+node verify-phase2.mjs
+```
+Expected: `6 passed, 0 failed` — ensures acronym priority, 3-stall ESL requirement, and API fallback logic.
 
 ---
 
@@ -515,16 +525,9 @@ Expected output (all 12 checks must pass):
 | Phase | Hours | Status | Key Deliverables |
 |-------|-------|--------|-----------------|
 | **Phase 1** — Foundation | 0–4 | ✅ **Done** | `adaptationBus`, types, `nlpUtils`, `cognateMapper`, engine stub, data files |
-| **Phase 2** — Core Build | 4–14 | 🔄 Next | `definitionFetcher.ts`, full engine decision tree, stall detection, deduplication |
-| **Phase 3** — Integration | 14–20 | ⏳ Pending | Wire Dev D's `getParagraphById`, CFS tuning, E2E testing with real corpus |
+| **Phase 2** — Core Build | 4–14 | ✅ **Done** | `definitionFetcher.ts`, full engine decision tree, stall detection, deduplication |
+| **Phase 3** — Integration | 14–20 | 🔄 Next | Wire Dev D's `getParagraphById`, CFS tuning, E2E testing with real corpus |
 | **Phase 4** — Demo Prep | 20–24 | ⏳ Pending | Demo passage, LibreTranslate warm-up, edge-case hardening |
-
-### Phase 2 files to build next
-
-| File | Purpose |
-|------|---------|
-| `src/utils/definitionFetcher.ts` | 3-layer definition fetch: Free Dict API → compromise fallback |
-| `src/utils/adaptationEngine.ts` | Replace Phase 1 stub with full decision tree |
 
 ---
 
