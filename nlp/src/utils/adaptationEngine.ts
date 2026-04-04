@@ -4,6 +4,8 @@ import { fetchCognate, detectUserLanguage } from "./cognateMapper";
 import { fetchDefinition } from "./definitionFetcher";
 import type { TriggerAdaptationEvent, AdaptationEvent } from "../types";
 
+import { getParagraphById, saveAppliedAdaptation } from "./paragraphUtils";
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 /**
@@ -79,30 +81,14 @@ function emitAdaptation(
   adaptationBus.emit("adaptation", event);
   adaptedWords.add(adaptationKey);
   
-  // saveAppliedAdaptation(event); // ← uncomment when Dev D's persistence.ts is merged
+  // Persist for metrics (Dev D)
+  saveAppliedAdaptation(event);
+  
   console.log("[ADAPTATION] Emitted:", event);
   return true;
 }
 
-// ─── Stub paragraph getter (Phase 1 — replaced in Phase 3) ───────────────────
-
-function getStubParagraph(
-  id: string
-): { id: string; text: string } | undefined {
-  // During Phase 2, we return a mock paragraph for verification if the id matches "verify-p1"
-  if (id === "verify-p1") {
-    return {
-      id: "verify-p1",
-      text: "The ubiquitous NLP phenomenon requires deep logic."
-    };
-  }
-  console.warn(
-    `[ADAPTATION] No paragraph data for ${id} — replace with Dev D's getParagraphById`
-  );
-  return undefined;
-}
-
-// ─── triggerAdaptation handler (Phase 2) ──────────────────────────────────────
+// ─── triggerAdaptation handler (Phase 3 Integration) ──────────────────────────
 
 adaptationBus.on("triggerAdaptation", async (event: TriggerAdaptationEvent) => {
   const { paragraphId, cfs, strugglingWord } = event;
@@ -117,8 +103,8 @@ adaptationBus.on("triggerAdaptation", async (event: TriggerAdaptationEvent) => {
     return;
   }
 
-  // 2. Data Check
-  const paragraph = getStubParagraph(paragraphId);
+  // 2. Data Check (Integration with Dev D via paragraphUtils)
+  const paragraph = getParagraphById(paragraphId);
   if (!paragraph) return;
 
   // 3. Target Word Selection

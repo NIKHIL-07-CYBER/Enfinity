@@ -512,11 +512,11 @@ node verify-phase1.mjs
 ```
 Expected: `12 passed, 0 failed` — ensures regex, similarity, and data integrity.
 
-### Phase 2 (Integration & Decision Tree)
+### Phase 3 (Calibration & Integration)
 ```bash
-node verify-phase2.mjs
+node calibrate-threshold.mjs
 ```
-Expected: `6 passed, 0 failed` — ensures acronym priority, 3-stall ESL requirement, and API fallback logic.
+Expected: Recommendation to use **1.5** based on mock corpus error rates.
 
 ---
 
@@ -526,8 +526,8 @@ Expected: `6 passed, 0 failed` — ensures acronym priority, 3-stall ESL require
 |-------|-------|--------|-----------------|
 | **Phase 1** — Foundation | 0–4 | ✅ **Done** | `adaptationBus`, types, `nlpUtils`, `cognateMapper`, engine stub, data files |
 | **Phase 2** — Core Build | 4–14 | ✅ **Done** | `definitionFetcher.ts`, full engine decision tree, stall detection, deduplication |
-| **Phase 3** — Integration | 14–20 | 🔄 Next | Wire Dev D's `getParagraphById`, CFS tuning, E2E testing with real corpus |
-| **Phase 4** — Demo Prep | 20–24 | ⏳ Pending | Demo passage, LibreTranslate warm-up, edge-case hardening |
+| **Phase 3** — Integration | 14–20 | ✅ **Done** | Wire Dev D's `getParagraphById`, CFS tuning, E2E testing with real corpus |
+| **Phase 4** — Demo Prep | 20–24 | 🔄 Next | Demo passage, LibreTranslate warm-up, edge-case hardening |
 
 ---
 
