@@ -1,0 +1,28 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Ensure demo video is NOT tracked if large, BUT the user explicitly requested adaptive-reader-demo.mp4 in the repo.
+# So we will not ignore .mp4 or we can explicitly allow it just in case:
+# !adaptive-reader-demo.mp4
