@@ -1,0 +1,30 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "docker run -d -p 5000:5000 libretranslate/libretranslate",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node server/index.ts",
+    "dev": "npx nodemon --watch server --watch src --ext ts --exec ts-node server/index.ts",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dexie": "^4.4.2",
+    "express": "^5.2.1",
+    "marked": "^17.0.5"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/marked": "^5.0.2",
+    "@types/node": "^25.5.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.2"
+  }
+}
