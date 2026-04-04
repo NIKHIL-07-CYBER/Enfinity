@@ -33,6 +33,11 @@ const acronymMap: Record<string, string> = acronymList as Record<string, string>
  *   // → ["ubiquitous", "transportation"]  (NOT "London")
  */
 export function getDifficultWords(text: string): string[] {
+  // Edge case: empty or invalid input
+  if (!text || typeof text !== "string" || text.trim().length === 0) {
+    return [];
+  }
+
   const doc = nlp(text);
 
   // Build proper noun exclusion set
@@ -46,8 +51,10 @@ export function getDifficultWords(text: string): string[] {
   const seen = new Set<string>();
 
   return words
+    .map((w) => w.replace(/[.,!?;:]/g, "")) // Clean punctuation
     .filter((w) => w.length > 3)
-    .filter((w) => /^[a-zA-Z]+$/.test(w))
+    .filter((w) => /^[a-zA-Z'’-]+$/.test(w)) // Allow apostrophes and hyphens
+    .map((w) => w.replace(/['’]s$/, "")) // Strip possessives for lookup
     .filter((w) => !easyWords.has(w.toLowerCase()))
     .filter((w) => !properNouns.has(w.toLowerCase()))
     .filter((w) => {

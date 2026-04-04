@@ -1,0 +1,26 @@
+[
+  {
+    "id": "easy-001",
+    "difficulty": "5th Grade",
+    "text": "The small cat sat on the soft mat. It was a very sunny day outside.",
+    "expectedDifficultWords": []
+  },
+  {
+    "id": "medium-001",
+    "difficulty": "High School",
+    "text": "The local library provides various educational resources for students who want to improve their knowledge of history and science.",
+    "expectedDifficultWords": ["educational", "resources", "knowledge"]
+  },
+  {
+    "id": "hard-001",
+    "difficulty": "University",
+    "text": "The ubiquitous nature of this NLP phenomenon requires an interdisciplinary approach to resolve the underlying complexity.",
+    "expectedDifficultWords": ["ubiquitous", "phenomenon", "interdisciplinary", "complexity"]
+  },
+  {
+    "id": "demo-001",
+    "difficulty": "Mixed",
+    "text": "The API allows users to access remote datasets via the SDK, and the JWT ensures that all requests are securely authenticated.",
+    "expectedDifficultWords": ["API", "SDK", "JWT", "authenticated"]
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "title": "Hackathon Demo: Clinical Research Overview",
+  "paragraphs": [
+    {
+      "id": "demo-p1",
+      "text": "The ubiquitous nature of the NLP phenomenon requires an interdisciplinary approach. The user's metadata is securely authenticated via the SDK and JWT. We meticulous analyze all telemetry signals to ensure our API remains robust for clinical research."
+    },
+    {
+      "id": "demo-p2",
+      "text": "Furthermore, the implementation of complex algorithms within our SDK allows for real-time struggle detection. For our ESL readers, the system automatically suggests cognates for words like 'phenomenon' (fenómeno) after multiple stalls are detected by the telemetry layer."
+    }
+  ],
+  "script": [
+    {
+      "step": "Acronym Demo",
+      "action": "triggerAdaptation for 'NLP'",
+      "expected": "Expands to 'Natural Language Processing'"
+    },
+    {
+      "step": "Definition Demo",
+      "action": "triggerAdaptation for 'ubiquitous'",
+      "expected": "Shows dictionary definition via API"
+    },
+    {
+      "step": "ESL Cognate Demo",
+      "action": "Send 3 stalls for 'phenomenon'",
+      "expected": "Shows Spanish translation 'fenómeno (es)'"
+    }
+  ]
+}
