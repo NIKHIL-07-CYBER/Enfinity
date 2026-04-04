@@ -8,7 +8,7 @@ import { useAdaptationStore } from './useAdaptationStore';
 export function useSessionPersistence() {
   const { activeParagraphId } = useTelemetryStore();
   const { appliedAdaptations } = useAdaptationStore();
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimer = useRef<any>(null);
 
   useEffect(() => {
     const handleScroll = () => {

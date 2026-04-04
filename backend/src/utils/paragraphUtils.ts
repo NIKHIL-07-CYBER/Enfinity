@@ -1,9 +1,10 @@
 import { marked } from 'marked';
+import { daleChall } from 'dale-chall';
 import { Paragraph } from '../types';
 
 export function generateParagraphId(index: number): string {
   // Returns zero-padded strings like p-001, p-002
-  return `p-${index.toString().padStart(3, '0')}`;
+  return `p-${String(index + 1).padStart(3, '0')}`;
 }
 
 export function computeDaleChallScore(text: string): number {
@@ -15,8 +16,8 @@ export function computeDaleChallScore(text: string): number {
   
   if (numWords === 0) return 0;
   
-  // Scaffolding logic: Assuming words > 6 characters are "difficult" for the sake of the formula
-  const difficultWordsCount = words.filter(word => word.length > 6).length;
+  // Use the 3,000-word "easy list"
+  const difficultWordsCount = words.filter(word => !daleChall.includes(word.toLowerCase())).length;
   
   const percentDifficultWords = (difficultWordsCount / numWords) * 100;
   const avgSentenceLength = numWords / numSentences;
@@ -72,7 +73,7 @@ export async function parseFile(fileContent: string): Promise<Paragraph[]> {
   return finalChunks.map((text, index) => {
     const wordCount = (text.match(/\b\w+\b/g) || []).length;
     return {
-      id: generateParagraphId(index + 1),
+      id: generateParagraphId(index),
       text: text,
       wordCount: wordCount,
       daleChallScore: computeDaleChallScore(text)

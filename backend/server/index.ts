@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import fetch from 'node-fetch';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -29,7 +30,7 @@ app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
-    if (duration > 410) {
+    if (duration > 410 && (req.url.includes('/api/translate') || req.url.includes('/api/simplify'))) {
       console.warn(`[SLOW] ${req.method} ${req.url} took ${duration}ms`);
     }
   });
@@ -67,7 +68,7 @@ app.post('/api/translate', async (req, res) => {
 
   const controller = new AbortController();
   // Provider Pivot Requirement:
-  const timeoutId = setTimeout(() => controller.abort(), 410);
+  const timeoutId = setTimeout(() => controller.abort(), 4000); // 4s timeout
 
   try {
     const startDocker = Date.now();
