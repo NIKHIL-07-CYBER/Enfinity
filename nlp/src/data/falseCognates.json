@@ -1,0 +1,35 @@
+{
+  "es": [
+    "actual", "advertise", "argument", "assist", "attend",
+    "billion", "bizarre", "bland", "brave", "camp",
+    "carpet", "casual", "college", "compromise", "conductor",
+    "constipated", "contest", "costume", "deception", "delight",
+    "demand", "design", "disgrace", "divert", "embarrassed",
+    "eventual", "excited", "exit", "fabric", "familiar",
+    "figure", "gentle", "gracious", "grocery", "idiom",
+    "introduce", "large", "lecture", "library", "luxury",
+    "magazine", "manifestation", "misery", "molestation", "notice",
+    "once", "ordinary", "parents", "pretend", "professor",
+    "prospect", "realize", "record", "regular", "remove",
+    "resume", "rope", "rude", "sane", "sensible",
+    "sensitive", "soap", "success", "support", "sympathetic"
+  ],
+  "fr": [
+    "actually", "attend", "bless", "coin", "demand",
+    "figure", "gentle", "hazard", "library",
+    "location", "opportunity", "pain", "preserve",
+    "prune", "raisin", "resume", "store", "sympathetic"
+  ],
+  "de": [
+    "angel", "art", "bald", "billion", "brand",
+    "brief", "chef", "eventually", "fabric", "fast",
+    "gift", "handy", "hell", "kind", "last",
+    "list", "menu", "mist", "note", "rat"
+  ],
+  "pt": [
+    "actual", "attend", "college", "costume", "data",
+    "educated", "exquisite", "fabric", "intend", "lecture",
+    "lunch", "novel", "particular", "prejudice", "pretend",
+    "push", "realize", "resume", "sensible", "sympathetic"
+  ]
+}
