@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { TopNav } from '@/components/Layout/TopNav';
 import { DropZone } from '@/components/Upload/DropZone';
 import { RecentDocuments } from '@/components/Upload/RecentDocuments';
 
 export const UploadPage: React.FC = () => {
-  const [fileName, setFileName] = useState<string | null>(null);
-
   return (
     <div className="min-h-screen relative flex flex-col items-center pt-32 pb-8" style={{ backgroundColor: 'var(--bg-color)' }}>
       <TopNav />
@@ -18,13 +16,7 @@ export const UploadPage: React.FC = () => {
           Provide the vessel for your next exploration. The system will adapt to your rhythm as you commit your words to the breathing canvas.
         </p>
 
-        {fileName && (
-          <div className="w-full text-center mb-6 text-sm font-bold text-green-600">
-            Loaded: {fileName}
-          </div>
-        )}
-
-        <DropZone onFileDrop={(file) => setFileName(file.name)} />
+        <DropZone />
         
         <RecentDocuments />
       </main>
@@ -40,3 +32,4 @@ export const UploadPage: React.FC = () => {
     </div>
   );
 };
+
