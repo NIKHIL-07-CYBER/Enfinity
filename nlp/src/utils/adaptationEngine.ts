@@ -3,22 +3,13 @@ import { getDifficultWords, isAcronym, expandAcronym } from "./nlpUtils";
 import { fetchCognate, detectUserLanguage } from "./cognateMapper";
 import { fetchDefinition } from "./definitionFetcher";
 import type { TriggerAdaptationEvent, AdaptationEvent } from "../types";
-
 import { getParagraphById, saveAppliedAdaptation } from "./paragraphUtils";
+import { NLP_CONFIG } from "../nlp.config";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// ─── Thresholds (driven from NLP_CONFIG / env vars) ──────────────────────────
 
-/**
- * CFS threshold above which adaptation fires.
- * Tuned in Phase 3 (Hour 16) against easy / medium / hard passages.
- * Default: 1.5 — increase to 1.8 if too aggressive, decrease to 1.3 if too quiet.
- */
-const CFS_THRESHOLD = 1.5;
-
-/**
- * Number of stalls for a specific word before triggering ESL cognate mode.
- */
-const ESL_STALL_THRESHOLD = 3;
+const CFS_THRESHOLD = NLP_CONFIG.CFS_THRESHOLD;
+const ESL_STALL_THRESHOLD = NLP_CONFIG.ESL_STALL_THRESHOLD;
 
 // ─── Session-scoped state ─────────────────────────────────────────────────────
 

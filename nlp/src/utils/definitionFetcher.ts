@@ -1,9 +1,5 @@
 import nlp from "compromise";
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const DICTIONARY_API_BASE = "https://api.dictionaryapi.dev/api/v2/entries/en";
-const TIMEOUT_MS = 4000;
+import { NLP_CONFIG } from "../nlp.config";
 
 // ─── fetchDefinition ──────────────────────────────────────────────────────────
 
@@ -29,9 +25,9 @@ export async function fetchDefinition(word: string): Promise<string> {
   try {
     // Layer 1: Dictionary API with timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    const timeoutId = setTimeout(() => controller.abort(), NLP_CONFIG.API_TIMEOUT_MS);
 
-    const res = await fetch(`${DICTIONARY_API_BASE}/${cleanWord}`, {
+    const res = await fetch(`${NLP_CONFIG.DICT_API_URL}/${cleanWord}`, {
       signal: controller.signal,
     });
     clearTimeout(timeoutId);

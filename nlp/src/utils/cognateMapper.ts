@@ -1,4 +1,5 @@
 import falseCognatesData from "../data/falseCognates.json";
+import { NLP_CONFIG } from "../nlp.config";
 
 // ─── False cognate blocklist ───────────────────────────────────────────────────
 const falseCognates: Record<string, string[]> = falseCognatesData as Record<
@@ -128,7 +129,7 @@ export async function fetchCognate(
   }
 
   try {
-    const res = await fetch("/api/translate", {
+    const res = await fetch(NLP_CONFIG.TRANSLATE_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: word, source: "en", target: targetLang }),
@@ -142,9 +143,9 @@ export async function fetchCognate(
 
     // Safety filter 2: similarity threshold
     const similarity = cognateSimilarity(word, translatedText);
-    if (similarity < 0.6) {
+    if (similarity < NLP_CONFIG.COGNATE_SIMILARITY_THRESHOLD) {
       console.log(
-        `[COGNATE] Rejected "${word}" → "${translatedText}" (similarity ${similarity.toFixed(2)} < 0.6)`
+        `[COGNATE] Rejected "${word}" → "${translatedText}" (similarity ${similarity.toFixed(2)} < ${NLP_CONFIG.COGNATE_SIMILARITY_THRESHOLD})`
       );
       return null;
     }
