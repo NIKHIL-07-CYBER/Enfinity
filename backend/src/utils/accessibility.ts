@@ -1,4 +1,4 @@
-import { AdaptationEvent } from '../types';
+import type { AdaptationEvent } from '../types';
 
 export function announceAdaptation(event: AdaptationEvent): void {
   let announcer = document.getElementById('adaptation-announcer') as HTMLDivElement | null;

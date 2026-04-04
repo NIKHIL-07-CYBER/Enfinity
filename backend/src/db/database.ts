@@ -1,8 +1,10 @@
-import Dexie, { Table } from 'dexie';
+/// <reference types="node" />
+import Dexie, { type Table } from 'dexie';
 
 // Polyfill IndexedDB for Node.js environments to prevent crash
 if (typeof window === 'undefined') {
-  const { indexedDB, IDBKeyRange } = require('fake-indexeddb');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { indexedDB, IDBKeyRange } = require('fake-indexeddb') as typeof import('fake-indexeddb');
   Dexie.dependencies.indexedDB = indexedDB;
   Dexie.dependencies.IDBKeyRange = IDBKeyRange;
 }
@@ -10,6 +12,7 @@ if (typeof window === 'undefined') {
 export interface TelemetryEvent {
   id?: number;
   paragraphId: string;
+  cfs: number;
   timestamp: number;
 }
 

@@ -1,11 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTelemetryStore } from '../store/telemetryStore';
 import { useConceptStore } from '../store/conceptStore';
-
-// TODO: Replace stub with real adaptationBus import when Dev C merges
-const adaptationBus = {
-  emit: (e: string, d: unknown) => console.log('[adaptationBus STUB]', e, d),
-};
+import { adaptationBus } from '../../nlp/src/utils/adaptationBus';
+import { saveTelemetryEvent, saveConceptTerms } from '../../backend/src/utils/persistence';
 
 export function TelemetryOverlay() {
   const [visible, setVisible] = useState(false);
@@ -27,20 +24,33 @@ export function TelemetryOverlay() {
 
   if (!visible) return null;
 
-  // --- Simulate struggle for demo purposes ---
+  /** Injects CFS 2.0 on the current (or first visible) paragraph — persists like a real exit event. */
   function simulateStruggle() {
     const paragraphId =
-      useTelemetryStore.getState().activeParagraphId || 'demo-paragraph-1';
+      useTelemetryStore.getState().activeParagraphId ||
+      document.querySelector('[data-paragraph-id]')?.getAttribute('data-paragraph-id');
 
-    useTelemetryStore.getState().updateCFS({
+    if (!paragraphId) {
+      console.warn('[TELEMETRY] Simulate Struggle: no paragraph in view — load a document first.');
+      return;
+    }
+
+    const daleChallScore =
+      useTelemetryStore.getState().latestCFS?.daleChallScore ?? 8;
+
+    const event = {
       paragraphId,
       cfs: 2.0,
       observedWPM: 55,
       regressionRate: 0.4,
-      daleChallScore: 9,
-    });
+      daleChallScore,
+    };
+
+    useTelemetryStore.getState().updateCFS(event);
+    void saveTelemetryEvent(event);
 
     useConceptStore.getState().addStruggledParagraph(paragraphId);
+    void saveConceptTerms(useConceptStore.getState().struggledTerms);
 
     adaptationBus.emit('triggerAdaptation', { paragraphId, cfs: 2.0 });
   }
@@ -134,7 +144,7 @@ export function TelemetryOverlay() {
           fontSize: 11,
         }}
       >
-        ⚡ DEMO — Simulate Struggle
+        Simulate Struggle (CFS 2.0)
       </button>
     </div>
   );

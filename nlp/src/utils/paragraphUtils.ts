@@ -1,5 +1,6 @@
 import type { AdaptationEvent } from "../types";
 import mockCorpus from "../data/mockCorpus.json";
+import { saveAppliedAdaptation as persistAdaptationToDb } from "../../../backend/src/utils/persistence";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -47,9 +48,7 @@ export function getParagraphById(id: string): Paragraph | undefined {
  * @param event  The AdaptationEvent emitted by Dev C
  */
 export function saveAppliedAdaptation(event: AdaptationEvent): void {
-  console.log(`[PERSISTENCE] Saving adaptation for ${event.paragraphId}:`, event);
-  // Dev D will implement logic like:
-  // db.adaptations.add(event);
+  void persistAdaptationToDb(event);
 }
 
 /**

@@ -1,9 +1,12 @@
-// TODO: Replace adaptationBus stub with import from nlp/utils/adaptationBus.ts when Dev C merges
-// TODO: Replace saveTelemetryEvent stub with import from backend/utils/persistence.ts when Dev D merges
-
 import { calculateCFS } from './cfsCalculator';
 import { useTelemetryStore, type CFSEvent } from '../store/telemetryStore';
 import { useConceptStore } from '../store/conceptStore';
+import { adaptationBus } from '../../nlp/src/utils/adaptationBus';
+import {
+  saveTelemetryEvent,
+  saveConceptTerms,
+} from '../../backend/src/utils/persistence';
+import { extractDifficultTerms } from './keywordExtractor';
 
 // ---------------------------------------------------------------------------
 // Window type extension for global regression rate
@@ -15,28 +18,7 @@ declare global {
 }
 
 // ---------------------------------------------------------------------------
-// STUB: adaptationBus  (replaced when Dev C merges)
-// ---------------------------------------------------------------------------
-const adaptationBus = {
-  emit: (event: string, data: unknown) => {
-    if (import.meta.env?.DEV) {
-      console.log('[adaptationBus STUB]', event, data);
-    }
-  },
-};
 
-// ---------------------------------------------------------------------------
-// STUB: saveTelemetryEvent  (replaced when Dev D merges)
-// ---------------------------------------------------------------------------
-async function saveTelemetryEvent(event: CFSEvent): Promise<void> {
-  try {
-    const existing = JSON.parse(localStorage.getItem('telemetry_log') || '[]');
-    existing.push(event);
-    localStorage.setItem('telemetry_log', JSON.stringify(existing));
-  } catch {
-    // localStorage unavailable, silently skip
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Main pipeline function — called inside requestIdleCallback, never on main
@@ -45,6 +27,7 @@ export function processParagraphExit(
   paragraphId: string,
   observedWPM: number,
   daleChallScore: number,
+  paragraphText?: string,
 ): void {
   // Guard: extremely high WPM means the user is skimming, not reading
   if (observedWPM > 600) {
@@ -80,6 +63,13 @@ export function processParagraphExit(
   // If CFS exceeds the struggle threshold, flag the paragraph and trigger adaptation
   if (cfs > 1.5) {
     useConceptStore.getState().addStruggledParagraph(paragraphId);
+
+    if (paragraphText) {
+      const terms = extractDifficultTerms(paragraphText);
+      terms.forEach((t) => useConceptStore.getState().addStruggledTerm(t));
+      void saveConceptTerms(useConceptStore.getState().struggledTerms);
+    }
+
     adaptationBus.emit('triggerAdaptation', { paragraphId, cfs });
   }
 }

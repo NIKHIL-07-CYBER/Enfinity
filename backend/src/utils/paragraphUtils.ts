@@ -1,6 +1,6 @@
 import { marked } from 'marked';
 import { daleChall } from 'dale-chall';
-import { Paragraph } from '../types';
+import type { Paragraph } from '../types';
 
 export function generateParagraphId(index: number): string {
   // Returns zero-padded strings like p-001, p-002

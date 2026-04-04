@@ -1,5 +1,6 @@
-import { db, SessionState, TelemetryEvent, StoredAdaptation } from '../db/database';
-import { CFSEvent, AdaptationEvent } from '../types';
+import { db } from '../db/database';
+import type { SessionState, StoredAdaptation } from '../db/database';
+import type { CFSEvent, AdaptationEvent } from '../types';
 
 export async function saveSession(state: any): Promise<void> {
   const sessionData: SessionState = { id: 'current', ...state };
@@ -13,12 +14,34 @@ export async function loadSession(): Promise<SessionState | undefined> {
 export async function saveTelemetryEvent(event: CFSEvent): Promise<void> {
   await db.telemetry.add({
     paragraphId: event.paragraphId,
+    cfs: event.cfs,
     timestamp: Date.now()
   });
 }
 
-export async function loadTelemetryLog(): Promise<TelemetryEvent[]> {
-  return await db.telemetry.toArray();
+export async function loadTelemetryLog(): Promise<Record<string, number> | null> {
+  const events = await db.telemetry.toArray();
+  if (events.length === 0) return null;
+
+  const struggleLog: Record<string, number> = {};
+  for (const event of events) {
+    if (
+      struggleLog[event.paragraphId] === undefined ||
+      event.cfs > struggleLog[event.paragraphId]
+    ) {
+      struggleLog[event.paragraphId] = event.cfs;
+    }
+  }
+  return struggleLog;
+}
+
+export async function saveConceptTerms(terms: string[]): Promise<void> {
+  await db.session.put({ id: 'concept_terms', terms });
+}
+
+export async function loadConceptTerms(): Promise<string[]> {
+  const data = await db.session.get('concept_terms');
+  return data?.terms || [];
 }
 
 export async function saveAppliedAdaptation(event: AdaptationEvent): Promise<void> {

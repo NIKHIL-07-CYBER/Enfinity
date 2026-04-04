@@ -4,6 +4,7 @@ import { processParagraphExit } from '../utils/telemetryPipeline';
 
 export interface ParagraphMeta {
   id: string;
+  text: string;
   wordCount: number;
   daleChallScore: number;
 }
@@ -48,6 +49,7 @@ export function useParagraphDwell(paragraphs: ParagraphMeta[]): void {
                     id,
                     observedWPM,
                     paragraph.daleChallScore,
+                    paragraph.text,
                   ),
                 { timeout: 2000 },
               );
@@ -73,6 +75,7 @@ export function useParagraphDwell(paragraphs: ParagraphMeta[]): void {
                   id,
                   observedWPM,
                   paragraph.daleChallScore,
+                  paragraph.text,
                 ),
               { timeout: 2000 },
             );
@@ -122,7 +125,7 @@ export function useParagraphDwell(paragraphs: ParagraphMeta[]): void {
 
         requestIdleCallback(
           () =>
-            processParagraphExit(id, observedWPM, paragraph.daleChallScore),
+            processParagraphExit(id, observedWPM, paragraph.daleChallScore, paragraph.text),
           { timeout: 2000 },
         );
       }

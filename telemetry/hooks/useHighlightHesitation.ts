@@ -1,11 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useTelemetryStore } from '../store/telemetryStore';
 import { useConceptStore } from '../store/conceptStore';
-
-// TODO: Replace with import from nlp/utils/adaptationBus.ts when Dev C merges
-const adaptationBus = {
-  emit: (e: string, d: unknown) => console.log('[adaptationBus STUB]', e, d),
-};
+import { adaptationBus } from '../../nlp/src/utils/adaptationBus';
+import { saveConceptTerms } from '../../backend/src/utils/persistence';
 
 export function useHighlightHesitation(): void {
   const mouseDownTime = useRef<number>(0);
@@ -33,6 +30,7 @@ export function useHighlightHesitation(): void {
               strugglingWord: word,
             });
             useConceptStore.getState().addStruggledTerm(word);
+            void saveConceptTerms(useConceptStore.getState().struggledTerms);
           }
         });
       }

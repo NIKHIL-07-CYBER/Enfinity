@@ -1,0 +1,9 @@
+The Old Keyboard
+
+Elias found the mechanical keyboard in the dusty corner of a thrift shop. It was heavy, encased in yellowed plastic, and featured deep, clunky keys that looked like they belonged to a terminal from the 1980s. Despite its age, there was something undeniably appealing about the solid, tactile feedback it gave when he pressed the spacebar. He paid the five dollars, tucked it under his arm, and walked back to his apartment through the rain.
+
+After cleaning it with some rubbing alcohol and finding a suitable USB adapter, Elias plugged it into his modern workstation. The computer chimed, recognizing the ancient hardware immediately. He opened his code editor, intending to just type out a few lines to test the switches. The keys clacked loudly, echoing in the quiet room like a typewriter.
+
+He started working on a complex sorting algorithm that had been giving him trouble all week. Almost instinctively, his fingers flew across the board. He didn't have to pause to think about the syntax; the logic seemed to flow directly from his mind, through the heavy springs of the keys, and onto the screen. Within ten minutes, the script was finished. 
+
+He ran the compiler, expecting the usual barrage of red error messages. Instead, the console flashed green. The code executed perfectly on the first try, processing the dataset in record time. Elias sat back, staring at the screen, and then slowly looked down at the scratched, off-white plastic of the keyboard. He didn't know where it had come from, but he knew he was never going back to a membrane keyboard again.
