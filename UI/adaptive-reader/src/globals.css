@@ -1,0 +1,16 @@
+:root {
+  --bg-color: #FDFCF9;
+  --text-color: #1a1a18;
+  --font-size: 18px;
+  --line-height: 1.75;
+  --max-width: 680px;
+  --chrome-opacity: 1;       /* 0 = hidden, 1 = visible */
+  --paragraph-opacity: 1;    /* active = 1, non-active = 0.3 */
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: "Atkinson Hyperlegible", sans-serif;
+  transition: all 0.8s ease;
+}
