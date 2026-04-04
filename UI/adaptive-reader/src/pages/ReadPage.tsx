@@ -1,11 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { TopNav } from '@/components/Layout/TopNav';
 import { SidebarNav } from '@/components/Layout/SidebarNav';
 import { ReadingContainer } from '@/components/Reader/ReadingContainer';
 import { Paragraph } from '@/types';
 import { ChromeShell } from '@/components/Reader/ChromeShell';
+import { useEyeStrainSchedule } from '@/hooks/useEyeStrainSchedule';
+import { BreakPrompt } from '@/components/Reader/BreakPrompt';
 
 export const ReadPage: React.FC = () => {
+  const [showBreak, setShowBreak] = useState(false);
+
+  useEyeStrainSchedule({
+    onBreakDue: () => setShowBreak(true)
+  });
+
   const dummyParagraphs: Paragraph[] = [
     { id: 'p1', text: 'Silence is not merely the absence of sound, but an active, architectural force in human cognition. We build monuments of thought within these quiet spaces, where the mind stretches outward into the void, finding form in the formless.', wordCount: 42, daleChallScore: 4.2 },
     { id: 'p2', text: 'When the auditory cortex is deprived of its usual chaotic input, the brain does not power down. Instead, it reallocates resources. The default mode network—the structural basis for daydreams, reflection, and self-identity—lights up with unparalleled intensity.', wordCount: 38, daleChallScore: 6.1 },
@@ -25,13 +33,7 @@ export const ReadPage: React.FC = () => {
         <ReadingContainer paragraphs={dummyParagraphs} />
       </main>
 
-      <div className="fixed bottom-6 right-6 p-4 rounded shadow-xl flex flex-col w-[320px] pointer-events-auto z-50 transition-transform" style={{ backgroundColor: 'var(--toast-bg)', color: '#fff' }}>
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-[10px] tracking-widest font-bold opacity-80" style={{ color: '#A3B8CC' }}>DEEP READ SUGGESTION</span>
-          <button className="opacity-60 hover:opacity-100 transition-opacity">✕</button>
-        </div>
-        <p className="text-sm font-medium leading-relaxed">It seems you slowed down on the previous paragraph. Ready to review key concepts?</p>
-      </div>
+      <BreakPrompt isVisible={showBreak} onDismiss={() => setShowBreak(false)} />
 
       <div className="fixed top-24 right-0 w-1 h-full pointer-events-none origin-top" style={{ backgroundColor: 'transparent' }}>
         <div className="w-1 h-[20%] absolute top-[30%]" style={{ backgroundColor: 'var(--accent-blue)' }} />
@@ -39,3 +41,4 @@ export const ReadPage: React.FC = () => {
     </div>
   );
 };
+
