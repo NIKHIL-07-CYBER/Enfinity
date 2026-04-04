@@ -13,6 +13,6 @@ export async function preDemoPrep(): Promise<void> {
     scrollY: 850
   });
 
-  console.log('Distraction-Free Adaptive Reader: DEMO READY.');
-  console.log('Safety Net Active. Paragraph set to p-003.');
+  console.warn('Distraction-Free Adaptive Reader: DEMO READY.');
+  console.warn('Safety Net Active. Paragraph set to p-003.');
 }

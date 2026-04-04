@@ -67,7 +67,7 @@ app.post('/api/translate', async (req, res) => {
 
   const controller = new AbortController();
   // Provider Pivot Requirement:
-  const timeoutId = setTimeout(() => controller.abort(), 500);
+  const timeoutId = setTimeout(() => controller.abort(), 410);
 
   try {
     const startDocker = Date.now();
@@ -80,7 +80,7 @@ app.post('/api/translate', async (req, res) => {
     
     clearTimeout(timeoutId);
     
-    if (Date.now() - startDocker >= 500) {
+    if (Date.now() - startDocker >= 410) {
       useFallbackPriority = true; // Lock memory for demo duration
     }
 
@@ -90,7 +90,7 @@ app.post('/api/translate', async (req, res) => {
     return res.json(wrapSuccess(data));
   } catch (error) {
     clearTimeout(timeoutId);
-    console.warn('Docker failed or crossed 500ms, tripping circuit breaker to MyMemory');
+    console.warn('Docker failed or crossed 410ms, tripping circuit breaker to MyMemory');
     useFallbackPriority = true; // Hard lock memory
     
     try {
@@ -140,5 +140,5 @@ app.post('/api/simplify', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Express Proxy Server listening on port ${PORT}`);
+  console.warn(`Express Proxy Server listening on port ${PORT}`);
 });

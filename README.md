@@ -2,36 +2,28 @@
 
 Welcome to the Distraction-Free Adaptive Reader. This repository orchestrates a resilient reading environment built dynamically around accessibility, zero-chrome performance layout, and localized linguistic adaptation.
 
-## The Science Section
+## The Science of Reading
+The foundation of our platform relies upon the **Simple View of Reading**, defined mathematically as $RC = D \times LC$. By analyzing and responding to comprehension constraints seamlessly, we build an optimized reading flow.
 
-The logic stems from the **Simple View of Reading** ($RC = D \times LC$). We track and govern cognitive friction proactively.
+## The CFS Algorithm
+Our predictive model measures these factors locally through the Cognitive Friction Score, scaling regression analysis dynamically.
+$$CFS = (\text{Dale-Chall}/10) \cdot (\text{targetWPM}/\text{observedWPM}) \cdot (1 + \text{regression})$$
 
-### The Cognitive Friction Score (CFS)
-We use a weighted regression mapping engine governed precisely by the user's observed reading speed paired identically with a dynamic regression calculation offset by text difficulty.
+## Tech Stack
 
-$$CFS = (DaleChall / 10) \cdot (targetWPM / observedWPM) \cdot (1 + regression)$$
-
-## Core Features
-
-1. **Glow Tracking:** Proactive word-level emphasis masking background sentences to enhance deep focus natively.
-2. **CFS Engine:** Calculates the Cognitive Friction Score tracking WPM regressions dynamically natively.
-3. **Adaptive Simplification:** Local proxy hits Dictionary APIs dynamically rewriting intense phrasing intelligently.
-4. **Data Persistence:** Offline native Dexie indexing capturing layout states locally flawlessly.
-5. **State Restoration:** Restores paragraph anchoring instantly in under 300ms maintaining scroll lock architectures securely.
-6. **Robust Offline Support:** Workbox-less Service Worker caches application architectures and reading elements effectively natively.
-7. **Accessibility (ARIA):** `aria-live` regions automatically alert Screen Readers strictly on translation changes silently.
-8. **Demo Safety Reset:** Built-in `Ctrl+Shift+D` API hook clears all session payloads immediately between judging resets securely.
-
-## Technology Stack
-
-| Tech Layer | Choice | Reason |
+| Layer | Implementation | Technical Reasoning |
 | :--- | :--- | :--- |
-| **Frontend Setup** | React + Vite | Extremely fast local compilation rendering isolated rendering environments reliably. |
-| **Styling** | Vanilla CSS | Total flexibility over the Distraction-Free DOM architecture natively. |
-| **Persistence Database** | Dexie.js (IndexedDB) | Outstanding offline asynchronous mapping providing deep-state guarantees seamlessly. |
-| **Proxy Server** | Express | Easily manages `AbortController` failover constraints and pipeline timing latency layers natively. |
-| **Network Caching** | Service Worker | Minimal Workbox-less implementation granting zero-latency demo capabilities securely natively. |
-| **Global State** | Zustand | Ensures precise reactive data flow between independent developers (Telemetry/Analysis/Persistence). |
+| **Offline Persistence** | Dexie.js (IndexedDB) | Exceptional offline mapping providing fast state guarantees entirely locally. |
+| **Proxy Server** | Express / Node.js | Safely manages `AbortController` latency layers isolating the frontend smoothly. |
+| **Translation Engine** | Docker LibreTranslate / MyMemory | Prioritized local Docker for maximum privacy, gracefully falling back to MyMemory. |
 
-## Environment Requirements
-Ensure your Vercel (Frontend) executes strictly at `localhost:5173` while configuring your variables (`FRONTEND_URL`, `LIBRE_TRANSLATE_URL`) properly via Railway to support CORS structures successfully.
+## Local Setup
+
+**Step 1. Docker:** Start the linguistic container logic natively.
+`docker run -d -p 5000:5000 libretranslate/libretranslate`
+
+**Step 2. Server:** Execute the proxy background pipeline.
+`cd backend && npm install && npm run dev`
+
+**Step 3. Frontend:** Boot the React execution context targeting Vite.
+`cd frontend && npm install && npm run dev`
