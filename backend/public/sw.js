@@ -2,7 +2,8 @@ const CACHE_NAME = 'adaptive-reader-cache-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/corpus/article.json', // generic generic for testing
+  '/corpus/article.json',
+  '/demo-passage.md'
 ];
 
 self.addEventListener('install', (event) => {

@@ -48,14 +48,29 @@ app.get('/api/health', (req, res) => {
   res.json(wrapSuccess({ status: 'ok' }));
 });
 
+let useFallbackPriority = false;
+
 app.post('/api/translate', async (req, res) => {
   const { q, source, target } = req.body;
 
+  if (useFallbackPriority) {
+    try {
+      const fallbackRes = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=${source}|${target}`);
+      const fallbackData = await fallbackRes.json();
+      if (fallbackData.responseStatus === 200) {
+        return res.json(wrapSuccess({ translatedText: fallbackData.responseData.translatedText }));
+      }
+    } catch (e) {
+      // Ignore and attempt docker
+    }
+  }
+
   const controller = new AbortController();
-  // Provider Pivot: Drop Docker timeout aggressively to 300ms to heavily favor MyMemory or fast executions. Avoid latency spikes.
-  const timeoutId = setTimeout(() => controller.abort(), 300);
+  // Provider Pivot Requirement:
+  const timeoutId = setTimeout(() => controller.abort(), 500);
 
   try {
+    const startDocker = Date.now();
     const defaultRes = await fetch('http://localhost:5000/translate', {
       method: 'POST',
       body: JSON.stringify({ q, source, target }),
@@ -65,13 +80,18 @@ app.post('/api/translate', async (req, res) => {
     
     clearTimeout(timeoutId);
     
+    if (Date.now() - startDocker >= 500) {
+      useFallbackPriority = true; // Lock memory for demo duration
+    }
+
     if (!defaultRes.ok) throw new Error(`Docker failure: ${defaultRes.status}`);
     
     const data = await defaultRes.json();
     return res.json(wrapSuccess(data));
   } catch (error) {
     clearTimeout(timeoutId);
-    console.warn('Fallback to MyMemory API due to error:', error);
+    console.warn('Docker failed or crossed 500ms, tripping circuit breaker to MyMemory');
+    useFallbackPriority = true; // Hard lock memory
     
     try {
       const fallbackRes = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=${source}|${target}`);
