@@ -87,3 +87,4 @@ Thumbs.db
 
 # Telemetry / Misc
 .telemetry/
+node_modules
