@@ -1,73 +1,43 @@
-# React + TypeScript + Vite
+# 📑 Enfinity — Adaptive Reader UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The frontend for the **Enfinity** project, built for a seamless, distraction-free reading experience integrated with real-time comprehension telemetry.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Clean Typography**: Optimized for long-form reading with Georgia and ui-monospace fonts.
+- **Real-time Telemetry**: Integrated with the `@telemetry` module to monitor reading speed and struggle.
+- **Adaptive UI**: Responsive design that adapts to the reader's needs.
+- **Debug Overlay**: Toggleable panel (`Ctrl+Shift+D`) to visualize data in real-time.
 
-## React Compiler
+## 🚀 Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Installation
+From the root directory:
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Running the App
+From the `UI/adaptive-reader` directory:
+```bash
+npm run dev
 ```
+
+### Build
+To build for production:
+```bash
+npm run build
+```
+
+## 🏗️ Technical Details
+
+- **Framework**: React 19 + Vite
+- **Routing**: `react-router-dom` (Current route: `/read`)
+- **State Management**: `zustand`
+- **Styling**: `tailwindcss` + `@tailwindcss/postcss`
+- **Path Aliases**:
+  - `@telemetry`: Points to the repo-root `telemetry/` module.
+
+---
+
+*Part of the Enfinity adaptive reading ecosystem.*
