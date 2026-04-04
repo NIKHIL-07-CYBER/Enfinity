@@ -25,6 +25,10 @@ import { useActiveParagraph } from '@/hooks/useActiveParagraph';
 import { useTextSelection } from '@/hooks/useTextSelection';
 import { useUIVisibility } from '@/hooks/useUIVisibility';
 import { useDynamicBrightness } from '@/hooks/useDynamicBrightness';
+import { usePermissionMode } from '@/hooks/usePermissionMode';
+import { useManualMode } from '@/hooks/useManualMode';
+import { PermissionModePanel } from '@/components/Reader/PermissionModePanel';
+import { ManualHoverBox } from '@/components/Reader/ManualHoverBox';
 import { 
   useParagraphDwell, 
   useRegressionTracker, 
@@ -50,6 +54,8 @@ export const ReadPage: React.FC = () => {
   useTextSelection();
   useUIVisibility();
   useDynamicBrightness();
+  usePermissionMode();
+  useManualMode();
 
   // Eye strain schedule
   useEyeStrainSchedule({
@@ -207,7 +213,7 @@ export const ReadPage: React.FC = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8, ease: "easeInOut" }}
-      className="min-h-screen relative overflow-x-hidden" 
+      className="min-h-screen relative overflow-x-hidden"
       style={{ backgroundColor: 'var(--bg-color)' }}
     >
       <TelemetryOverlay />
@@ -216,8 +222,9 @@ export const ReadPage: React.FC = () => {
       </ChromeShell>
       <SidebarNav activePage="reader" />
       
-      <main className="pl-[160px] pb-32 pt-24 w-full sm:pl-[160px] max-sm:pl-0">
+      <main className="pl-[160px] pb-32 pt-24 w-full sm:pl-[160px] max-sm:pl-0 relative">
         <ReadingContainer />
+        <PermissionModePanel />
       </main>
 
       {/* Task 2c: Active paragraph indicator */}
@@ -225,6 +232,7 @@ export const ReadPage: React.FC = () => {
 
       {/* Task 3c: Selection toolbar */}
       <SelectionToolbar />
+      <ManualHoverBox />
 
       {/* Task 5: Chatbot */}
       <ChatbotAvatar />

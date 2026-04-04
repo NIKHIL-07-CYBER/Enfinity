@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { TopNav } from '@/components/Layout/TopNav';
 import { resetAllData } from '@/utils/persistence';
+import { useSettingsStore } from '@/store/settingsStore';
 
 interface ReaderSettings {
   defaultLanguage: string;
@@ -45,11 +46,6 @@ function persistSettings(settings: ReaderSettings) {
   localStorage.setItem('reader_settings', JSON.stringify(settings));
 }
 
-function applyTheme(theme: ReaderSettings['theme']) {
-  document.documentElement.classList.remove('theme-light', 'theme-sepia', 'theme-dark');
-  document.documentElement.classList.add(`theme-${theme}`);
-}
-
 function applyFontSize(size: number) {
   document.documentElement.style.setProperty('--font-size', `${size}px`);
 }
@@ -59,16 +55,26 @@ export const SettingsPage: React.FC = () => {
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    applyTheme(settings.theme);
     applyFontSize(settings.fontSize);
-  }, [settings.theme, settings.fontSize]);
+  }, [settings.fontSize]);
+
+  useEffect(() => {
+    useSettingsStore.getState().setTheme(settings.theme);
+    useSettingsStore.getState().setReadingLanguage(settings.defaultLanguage);
+  }, []);
 
   const update = (partial: Partial<ReaderSettings>) => {
-    setSettings(prev => {
+    setSettings((prev) => {
       const next = { ...prev, ...partial };
       persistSettings(next);
       return next;
     });
+    if (partial.theme != null) {
+      useSettingsStore.getState().setTheme(partial.theme);
+    }
+    if (partial.defaultLanguage != null) {
+      useSettingsStore.getState().setReadingLanguage(partial.defaultLanguage);
+    }
   };
 
   const handleResetAll = async () => {
@@ -120,7 +126,8 @@ export const SettingsPage: React.FC = () => {
             max={300}
             value={settings.targetWPM}
             onChange={(e) => update({ targetWPM: Number(e.target.value) })}
-            className="w-full accent-[#185FA5]"
+            className="w-full"
+            style={{ accentColor: 'var(--accent-blue)' }}
           />
           <div className="flex justify-between text-[10px] mt-1" style={{ color: 'var(--nav-text)' }}>
             <span>80</span><span>300</span>
@@ -138,7 +145,8 @@ export const SettingsPage: React.FC = () => {
             max={24}
             value={settings.fontSize}
             onChange={(e) => update({ fontSize: Number(e.target.value) })}
-            className="w-full accent-[#185FA5]"
+            className="w-full"
+            style={{ accentColor: 'var(--accent-blue)' }}
           />
           <div className="flex justify-between text-[10px] mt-1" style={{ color: 'var(--nav-text)' }}>
             <span>14px</span><span>24px</span>
@@ -174,7 +182,7 @@ export const SettingsPage: React.FC = () => {
           <button
             onClick={() => update({ brightnessAdapterEnabled: !settings.brightnessAdapterEnabled })}
             className="relative w-12 h-6 rounded-full transition-colors"
-            style={{ backgroundColor: settings.brightnessAdapterEnabled ? 'var(--accent-blue)' : '#ccc' }}
+            style={{ backgroundColor: settings.brightnessAdapterEnabled ? 'var(--accent-blue)' : 'var(--border-color)' }}
           >
             <div
               className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"

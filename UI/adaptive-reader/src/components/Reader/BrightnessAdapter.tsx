@@ -11,7 +11,7 @@ export const BrightnessAdapter: React.FC<{ visible: boolean }> = ({ visible }) =
       padding: '4px 8px',
       fontSize: '11px',
       fontFamily: 'ui-monospace, monospace',
-      color: '#f1f5f9',
+      color: 'var(--text-primary)',
       opacity: 0.8,
     }}>
       <span style={{ opacity: 0.6 }}>☀ Brightness: </span>

@@ -25,6 +25,15 @@ app.use(cors({
 }));
 app.use(express.json());
 
+const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+app.options('/api/translate', (req, res) => {
+  res.header('Access-Control-Allow-Origin', FRONTEND);
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Accept');
+  res.status(204).end();
+});
+
 // Timing Middleware
 app.use((req, res, next) => {
   const start = Date.now();
@@ -52,7 +61,18 @@ app.get('/api/health', (req, res) => {
 let useFallbackPriority = false;
 
 app.post('/api/translate', async (req, res) => {
-  const { q, source, target } = req.body;
+  res.header('Access-Control-Allow-Origin', FRONTEND);
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Accept');
+
+  const qRaw = req.body?.text ?? req.body?.q;
+  const q = typeof qRaw === 'string' ? qRaw.trim() : '';
+  const source = req.body?.source ?? 'en';
+  const target = req.body?.target ?? 'es';
+
+  if (!q) {
+    return res.status(400).json(wrapError('Missing text to translate'));
+  }
 
   if (useFallbackPriority) {
     try {

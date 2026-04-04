@@ -37,13 +37,19 @@ export function useTextSelection(): void {
         node = node.parentNode;
       }
 
-      useSelectionStore.getState().setCurrentSelection(text, {
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height,
-      }, paragraphId);
-      useSelectionStore.getState().setToolbarVisible(true);
+      const store = useSelectionStore.getState();
+      store.clearActionResults();
+      store.setCurrentSelection(
+        text,
+        {
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        },
+        paragraphId,
+      );
+      store.setToolbarVisible(true);
     };
 
     const handleMouseDown = (e: MouseEvent) => {

@@ -23,12 +23,12 @@ export const ActiveParagraphBox: React.FC = () => {
         top: '50%',
         transform: 'translateY(-50%)',
         width: '48px',
-        background: 'rgba(24,95,165,0.08)',
+        background: 'var(--accent-blue-bg)',
         borderRadius: '8px',
         padding: '6px 4px',
         fontFamily: 'ui-monospace, monospace',
         fontSize: '10px',
-        color: 'rgba(24,95,165,0.7)',
+        color: 'var(--accent-blue)',
         textAlign: 'center',
         zIndex: 900,
         pointerEvents: 'none',
@@ -44,14 +44,14 @@ export const ActiveParagraphBox: React.FC = () => {
       <div style={{
         width: '100%',
         height: '3px',
-        background: 'rgba(24,95,165,0.12)',
+        background: 'var(--accent-blue-bg)',
         borderRadius: '2px',
         overflow: 'hidden',
       }}>
         <div style={{
           width: `${progress}%`,
           height: '100%',
-          background: 'rgba(24,95,165,0.5)',
+          background: 'var(--accent-blue)',
           borderRadius: '2px',
           transition: 'width 300ms ease-out',
         }} />

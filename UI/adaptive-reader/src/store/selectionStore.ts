@@ -1,4 +1,4 @@
-// DONE: Task 3a — Selection store
+// DONE: Task 3a — Selection store + Task 2a action panel state
 import { create } from 'zustand';
 
 export interface SelectionEntry {
@@ -11,7 +11,9 @@ export interface SelectionEntry {
   definition?: string;
   pronunciation?: string;
   highlight?: string;
+  highlightId?: string;
   folder?: string;
+  note?: string;
 }
 
 export interface SelectionState {
@@ -21,20 +23,49 @@ export interface SelectionState {
   savedEntries: SelectionEntry[];
   folders: string[];
   isToolbarVisible: boolean;
-  setCurrentSelection: (text: string, rect: { top: number; left: number; width: number; height: number } | null, paragraphId: string) => void;
+  currentTranslation: string | null;
+  currentDefinition: string | null;
+  currentPhonetic: string | null;
+  isFetchingTranslation: boolean;
+  isFetchingDefinition: boolean;
+  isFetchingPhonetic: boolean;
+  noteContent: string;
+  setCurrentSelection: (
+    text: string,
+    rect: { top: number; left: number; width: number; height: number } | null,
+    paragraphId: string,
+  ) => void;
   saveEntry: (entry: SelectionEntry) => void;
   updateEntry: (id: string, partial: Partial<SelectionEntry>) => void;
   deleteEntry: (id: string) => void;
   addFolder: (name: string) => void;
   setToolbarVisible: (v: boolean) => void;
   loadFromStorage: () => void;
+  clearActionResults: () => void;
+  patchActionPanel: (
+    partial: Partial<
+      Pick<
+        SelectionState,
+        | 'currentTranslation'
+        | 'currentDefinition'
+        | 'currentPhonetic'
+        | 'isFetchingTranslation'
+        | 'isFetchingDefinition'
+        | 'isFetchingPhonetic'
+        | 'noteContent'
+      >
+    >,
+  ) => void;
+  buildEntry: (partial: Partial<SelectionEntry>) => SelectionEntry;
 }
 
 function loadEntries(): SelectionEntry[] {
   try {
     const stored = localStorage.getItem('selection_entries');
     if (stored) return JSON.parse(stored);
-  } catch { /* empty */ }
+  } catch {
+    /* empty */
+  }
   return [];
 }
 
@@ -42,7 +73,9 @@ function loadFolders(): string[] {
   try {
     const stored = localStorage.getItem('selection_folders');
     if (stored) return JSON.parse(stored);
-  } catch { /* empty */ }
+  } catch {
+    /* empty */
+  }
   return ['Unsorted'];
 }
 
@@ -54,13 +87,49 @@ function saveFoldersToLS(folders: string[]) {
   localStorage.setItem('selection_folders', JSON.stringify(folders));
 }
 
-export const useSelectionStore = create<SelectionState>((set) => ({
+export const useSelectionStore = create<SelectionState>((set, get) => ({
   currentSelection: '',
   currentParagraphId: '',
   selectionRect: null,
   savedEntries: loadEntries(),
   folders: loadFolders(),
   isToolbarVisible: false,
+  currentTranslation: null,
+  currentDefinition: null,
+  currentPhonetic: null,
+  isFetchingTranslation: false,
+  isFetchingDefinition: false,
+  isFetchingPhonetic: false,
+  noteContent: '',
+
+  clearActionResults: () =>
+    set({
+      currentTranslation: null,
+      currentDefinition: null,
+      currentPhonetic: null,
+      isFetchingTranslation: false,
+      isFetchingDefinition: false,
+      isFetchingPhonetic: false,
+      noteContent: '',
+    }),
+
+  patchActionPanel: (partial) => set(partial),
+
+  buildEntry: (partial) => {
+    const s = get();
+    const text = s.currentSelection;
+    let type: SelectionEntry['type'] = 'phrase';
+    if (!text.includes(' ')) type = 'word';
+    else if (/[.?!]$/.test(text)) type = 'sentence';
+    return {
+      id: crypto.randomUUID(),
+      text,
+      paragraphId: s.currentParagraphId,
+      timestamp: Date.now(),
+      type,
+      ...partial,
+    };
+  },
 
   setCurrentSelection: (text, rect, paragraphId) =>
     set({ currentSelection: text, selectionRect: rect, currentParagraphId: paragraphId }),
@@ -74,14 +143,14 @@ export const useSelectionStore = create<SelectionState>((set) => ({
 
   updateEntry: (id, partial) =>
     set((state) => {
-      const next = state.savedEntries.map(e => e.id === id ? { ...e, ...partial } : e);
+      const next = state.savedEntries.map((e) => (e.id === id ? { ...e, ...partial } : e));
       saveEntriesToLS(next);
       return { savedEntries: next };
     }),
 
   deleteEntry: (id) =>
     set((state) => {
-      const next = state.savedEntries.filter(e => e.id !== id);
+      const next = state.savedEntries.filter((e) => e.id !== id);
       saveEntriesToLS(next);
       return { savedEntries: next };
     }),

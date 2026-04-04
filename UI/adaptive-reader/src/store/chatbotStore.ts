@@ -18,7 +18,7 @@ export interface AvatarConfig {
 
 const DEFAULT_AVATAR: AvatarConfig = {
   emoji: '🦉',
-  color: '#185FA5',
+  color: 'var(--avatar-preset-1)',
   size: 52,
   positionX: 20,
   positionY: 12,

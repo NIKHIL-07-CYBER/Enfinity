@@ -1,0 +1,76 @@
+/* Sepia mode — warm paper tokens */
+html.sepia {
+  --bg-primary: #f5f0e4;
+  --bg-secondary: #ede8d8;
+  --bg-tertiary: #e5dfd0;
+  --text-primary: #3d2b1f;
+  --text-secondary: #6b4c35;
+  --text-tertiary: #8a6b52;
+  --border-color: rgba(109, 76, 53, 0.2);
+  --border-hover: rgba(109, 76, 53, 0.35);
+  --accent-blue: #185fa5;
+  --accent-blue-bg: rgba(24, 95, 165, 0.1);
+  --selection-bg: rgba(24, 95, 165, 0.15);
+  /* Legacy aliases used across the app */
+  --bg-color: var(--bg-primary);
+  --text-color: var(--text-primary);
+  --sidebar-bg: var(--bg-secondary);
+  --nav-text: var(--text-secondary);
+  --card-border: var(--border-color);
+  --accent-blue-light: var(--accent-blue-bg);
+}
+
+/* Dark mode token overrides */
+html.dark {
+  --bg-primary: #0f1117;
+  --bg-secondary: #1a1d27;
+  --bg-tertiary: #242736;
+  --text-primary: #e8e6e0;
+  --text-secondary: #9c9a92;
+  --text-tertiary: #5c5a54;
+  --border-color: rgba(232, 230, 224, 0.12);
+  --border-hover: rgba(232, 230, 224, 0.22);
+  --accent-blue: #4a8fd4;
+  --accent-blue-bg: rgba(74, 143, 212, 0.12);
+  --selection-bg: rgba(74, 143, 212, 0.18);
+  --toast-bg: rgba(15, 17, 23, 0.92);
+  /* Legacy aliases */
+  --bg-color: var(--bg-primary);
+  --text-color: var(--text-primary);
+  --sidebar-bg: var(--bg-secondary);
+  --nav-text: var(--text-secondary);
+  --card-border: var(--border-color);
+  --accent-blue-light: var(--accent-blue-bg);
+}
+
+html.dark .reading-container {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+html.dark .chrome-shell,
+html.dark nav,
+html.dark header {
+  background: var(--bg-secondary) !important;
+  border-bottom-color: var(--border-color) !important;
+}
+
+html.dark .chatbot-panel {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+html.dark mark {
+  filter: brightness(0.85);
+}
+
+html.dark input,
+html.dark textarea {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+html.dark button {
+  color: var(--text-primary);
+}

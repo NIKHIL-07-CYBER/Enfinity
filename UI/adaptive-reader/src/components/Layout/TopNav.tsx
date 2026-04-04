@@ -5,6 +5,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
 import { useScrollVelocity } from '@/hooks/useScrollVelocity';
 import { useUIStore } from '@/store/uiStore';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { ModeSelector } from '@/components/Reader/ModeSelector';
 
 export const TopNav: React.FC = () => {
   const { direction } = useScrollVelocity();
@@ -18,7 +20,7 @@ export const TopNav: React.FC = () => {
       initial={{ y: 0, opacity: 1 }}
       animate={{ y: hidden ? -100 : 0, opacity: hidden ? 0 : 1 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className={`chrome-shell fixed top-0 left-0 w-full z-50 flex items-center justify-between px-8 py-5 border-b bg-white ${burstActive ? 'chrome-burst' : ''}`}
+      className={`chrome-shell fixed top-0 left-0 w-full z-50 flex items-center justify-between px-8 py-5 border-b ${burstActive ? 'chrome-burst' : ''}`}
       style={{
         backgroundColor: 'var(--bg-color)',
         borderColor: 'var(--card-border)',
@@ -60,7 +62,9 @@ export const TopNav: React.FC = () => {
         >SAVED</Link>
       </div>
 
-      <div className="flex-1 flex justify-end gap-3">
+      <div className="flex-1 flex justify-end items-center gap-3">
+        <ModeSelector />
+        <ThemeToggle />
         <button
           onClick={() => navigate(ROUTES.settings)}
           className="p-2 cursor-pointer transition-colors"

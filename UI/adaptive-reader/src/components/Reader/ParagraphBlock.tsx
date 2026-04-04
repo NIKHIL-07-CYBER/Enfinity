@@ -59,7 +59,7 @@ export const ParagraphBlock = React.memo(({ paragraph }: { paragraph: Paragraph 
         return (
           <React.Fragment key={`${currentIndex}-${adaptation.type}`}>
             <span
-              style={{ borderBottom: "2px solid #185FA5", cursor: "pointer" }}
+              style={{ borderBottom: "2px solid var(--accent-blue)", cursor: "pointer" }}
               title={`Original: ${adaptation.originalWord}`}
             >
               {adaptation.replacement}
@@ -85,10 +85,10 @@ export const ParagraphBlock = React.memo(({ paragraph }: { paragraph: Paragraph 
       style={{
         transition: 'opacity 250ms ease-out, background-color 250ms ease-out',
         opacity: isActive ? 1 : 0.42,
-        backgroundColor: isActive ? 'rgba(24, 95, 165, 0.035)' : (isQuote ? 'var(--accent-blue-light)' : 'transparent'),
+        backgroundColor: isActive ? 'var(--accent-blue-bg)' : (isQuote ? 'var(--accent-blue-light)' : 'transparent'),
         borderLeft: isStruggling
-          ? '2.5px solid rgba(24,95,165,0.5)'
-          : (isActive ? '2.5px solid rgba(24,95,165,0.35)' : '2.5px solid transparent'),
+          ? `3px solid var(--accent-border-strong)`
+          : (isActive ? `3px solid var(--accent-border-subtle)` : '3px solid transparent'),
         paddingLeft: '12px',
         willChange: 'opacity',
         minHeight: `${minHeight}px`,

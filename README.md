@@ -5,37 +5,67 @@ Enfinity is a modern, distraction-free reading platform that uses a real-time **
 ## 🚀 Key Features
 
 - **Adaptive Reading Engine**: Real-time content modification (definitions, synonyms, simplification) when the system detects reader struggle.
+- **Multi-Layer Adaptation Logic**:
+  - ⚡ **Acronym Expansion**: Instant expansion of technical terms (e.g., "NLP" → "Natural Language Processing").
+  - 🌎 **ESL Cognate Swapping**: Provides linguistic bridges for ESL readers (e.g., "phenomenon" → "fenómeno") after repeated stalls.
+  - 📖 **Smart Definitions**: A 3-layer fallback system (API → Local NLP → Contextual Hint).
 - **Comprehension Friction Score (CFS)**: A proprietary score calculated using Dale-Chall text difficulty, reading speed (WPM), and regression rates.
 - **Micro-Engagement Telemetry**:
   - **Dwell Time**: Accurate tracking of time spent per paragraph using `IntersectionObserver`.
   - **Regression Tracking**: Detection of "re-reading" behavior via upward scroll analysis.
   - **Hesitation Detection**: Identification of confusion via word-level mouse hesitation (>800ms).
+- **Local-First Persistence**: Robust session recovery and data logging using **Dexie.js (IndexedDB)**.
 - **Interactive Debug Overlay**: A live telemetry panel for developers and judges to see the engine's "brain" in action.
-- **Session Persistence**: Automatic local storage of telemetry data and struggled concepts for a continuous learning experience.
 
 ## 📁 Project Structure
 
 The project is organized as a monorepo using **npm workspaces**:
 
-- **`/telemetry`**: The core telemetry and CFS engine.
+- **`/telemetry`**: The core intelligence module.
   - `/store`: Zustand state management for CFS events and concept graphs.
-  - `/hooks`: React hooks for dwell time, regression, hesitation, and session resume.
-  - `/utils`: Core logic for CFS calculation, keyword extraction, and the telemetry pipeline.
-  - `/components`: The `TelemetryOverlay` debug panel.
+  - `/hooks`: React hooks for dwell time, regression, and hesitation tracking.
+  - `/utils`: Core logic for CFS calculation and the telemetry pipeline.
+- **`/nlp`**: The linguistic "brain" of the project.
+  - `adaptationEngine.ts`: Decision tree for memilih the best intervention.
+  - `adaptationBus.ts`: Shared event bus for cross-module communication.
+  - `verify-*.mjs`: Automated verification scripts for linguistic logic.
 - **`/UI/adaptive-reader`**: A high-performance Vite + React frontend.
-  - Tailwind CSS for styling.
-  - React Router for navigation.
+  - Framer Motion for smooth, non-distracting UI transitions.
   - Integrated with the telemetry module via `@telemetry` path alias.
-- **`/nlp`**: Natural Language Processing utilities for text analysis and Dale-Chall scoring.
-- **`/backend`**: (In Progress) Persistence layer and user management.
+- **`/backend`**: Express Proxy and Persistence Layer.
+  - **Linguistic Proxy**: Resilient API access with automatic failover (LibreTranslate → MyMemory).
+  - **Persistence Hooks**: Dexie.js integration for 5-second debounced background saves.
+
+## 🧠 Adaptation Decision Tree
+
+The NLP layer processes struggle signals using a prioritized decision tree:
+
+```text
+Struggle Signal Detected (CFS > 1.5)
+        │
+        ├─ Word is ACRONYM? ──────────────────────→ EXPAND
+        │
+        ├─ User is ESL AND stall count ≥ 3?
+        │   └─ Word has COGNATE? ─────────────────→ TRANSLATE (Safety-checked)
+        │
+        └─ Default ───────────────────────────────→ DEFINITION (3-layer fallback)
+```
+
+## 💾 Persistence Layer
+
+Enfinity implements a **Local-First** architecture to ensure zero data loss:
+- **Primary Storage**: `IndexedDB` (via Dexie.js) for telemetry, adaptations, and session state.
+- **Fallback**: `localStorage` during `beforeunload` events.
+- **Recovery**: Automatic "Multi-Layer Recovery" on hard refreshes, restoring scroll position within 150ms.
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19, Vite, TypeScript
+- **Frontend**: React 19, Vite, TypeScript, Framer Motion
 - **State Management**: Zustand
-- **Styling**: Tailwind CSS, Vanilla CSS (for overlay)
-- **Testing**: Vitest
-- **Tooling**: ESLint, PostCSS
+- **Persistence**: Dexie.js (IndexedDB)
+- **NLP**: compromise.js, Dale-Chall 3,000 list
+- **Backend**: Express, LibreTranslate (Docker-ready), MyMemory API
+- **Testing**: Vitest, Custom MJS verification scripts
 
 ## ⌨️ Telemetry Engine (CFS)
 
@@ -48,8 +78,6 @@ $$CFS = \left(\frac{DaleChallScore}{10}\right) \times \left(\frac{TargetWPM}{Obs
 - **Observed WPM**: Actual reading speed calculated via dwell time.
 - **Regression Rate**: Fraction of scrolls that were upward.
 
-A **CFS > 1.5** triggers the adaptation bus, signaling that the reader needs assistance with the current paragraph.
-
 ## 🏁 Getting Started
 
 ### Prerequisites
@@ -61,21 +89,19 @@ From the root directory, run:
 ```bash
 npm install
 ```
-This will install all dependencies for the root, UI, and telemetry modules.
 
 ### Running the App
-To start the adaptive reader in development mode:
-```bash
-cd UI/adaptive-reader
-npm run dev
-```
+1. **Start the Backend Proxy**:
+   ```bash
+   cd backend
+   npm run dev
+   ```
+2. **Start the Adaptive Reader**:
+   ```bash
+   cd UI/adaptive-reader
+   npm run dev
+   ```
 Navigate to `http://localhost:5173/read` to start reading.
-
-### Running Tests
-To verify the telemetry engine:
-```bash
-npm test
-```
 
 ## 📡 Live Debugging (Judge's Mode)
 

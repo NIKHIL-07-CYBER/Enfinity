@@ -97,6 +97,10 @@ adaptationBus.on("triggerAdaptation", async (event: TriggerAdaptationEvent) => {
     : true;
   if (!adaptationEnabled) return;
 
+  const readingMode =
+    typeof localStorage !== "undefined" ? localStorage.getItem("reading_mode") : null;
+  if (readingMode === "permission" || readingMode === "manual") return;
+
   const { paragraphId, cfs, strugglingWord } = event;
 
   console.log(

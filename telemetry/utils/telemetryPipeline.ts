@@ -70,7 +70,16 @@ export function processParagraphExit(
       void saveConceptTerms(useConceptStore.getState().struggledTerms);
     }
 
-    adaptationBus.emit('triggerAdaptation', { paragraphId, cfs });
+    let autoAdapt = true;
+    try {
+      const rm = localStorage.getItem('reading_mode');
+      if (rm === 'permission' || rm === 'manual') autoAdapt = false;
+    } catch {
+      /* ignore */
+    }
+    if (autoAdapt) {
+      adaptationBus.emit('triggerAdaptation', { paragraphId, cfs });
+    }
   }
 }
 

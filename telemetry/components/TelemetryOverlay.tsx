@@ -52,7 +52,14 @@ export function TelemetryOverlay() {
     useConceptStore.getState().addStruggledParagraph(paragraphId);
     void saveConceptTerms(useConceptStore.getState().struggledTerms);
 
-    adaptationBus.emit('triggerAdaptation', { paragraphId, cfs: 2.0 });
+    try {
+      const rm = localStorage.getItem('reading_mode');
+      if (rm !== 'permission' && rm !== 'manual') {
+        adaptationBus.emit('triggerAdaptation', { paragraphId, cfs: 2.0 });
+      }
+    } catch {
+      adaptationBus.emit('triggerAdaptation', { paragraphId, cfs: 2.0 });
+    }
   }
 
   // --- Derived display values ---

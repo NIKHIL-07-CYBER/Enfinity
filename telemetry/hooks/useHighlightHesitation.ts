@@ -20,6 +20,13 @@ export function useHighlightHesitation(): void {
       // Only trigger for single-word selections held for > 800ms
       if (hesitationMs > 800 && word.length > 0 && !word.includes(' ')) {
         requestIdleCallback(() => {
+          try {
+            const rm = localStorage.getItem('reading_mode');
+            if (rm === 'permission' || rm === 'manual') return;
+          } catch {
+            /* ignore */
+          }
+
           const activeParagraphId =
             useTelemetryStore.getState().activeParagraphId;
 
