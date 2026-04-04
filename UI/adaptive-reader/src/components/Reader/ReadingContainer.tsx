@@ -54,7 +54,7 @@ export const ReadingContainer: React.FC = () => {
   const title = paragraphs[0]?.text.split('\n')[0] || "Untitled";
 
   return (
-    <div className="w-full max-w-[680px] mx-auto px-6 sm:px-12">
+    <div className="w-full max-w-[680px] mx-auto px-6 sm:px-12 reading-container" style={{ transition: 'filter 3s ease-in-out' }}>
       <div className="mb-12 mt-12">
         <div style={{ color: 'var(--nav-text)' }} className="text-xs uppercase tracking-widest font-bold mb-4">
           CHAPTER 01 • {readMins} MIN READ • WORD COUNT: {totalWords.toLocaleString()}

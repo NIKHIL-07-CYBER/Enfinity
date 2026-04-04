@@ -1,3 +1,4 @@
+// DONE: Task 1-9 — ReadPage integrating all new features
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { TopNav } from '@/components/Layout/TopNav';
@@ -6,13 +7,24 @@ import { ReadingContainer } from '@/components/Reader/ReadingContainer';
 import { ChromeShell } from '@/components/Reader/ChromeShell';
 import { useEyeStrainSchedule } from '@/hooks/useEyeStrainSchedule';
 import { BreakPrompt } from '@/components/Reader/BreakPrompt';
+import { ActiveParagraphBox } from '@/components/Reader/ActiveParagraphBox';
+import { FocusModeButton } from '@/components/Reader/FocusModeButton';
+import { SelectionToolbar } from '@/components/Selection/SelectionToolbar';
+import { ChatbotAvatar } from '@/components/Chatbot/ChatbotAvatar';
+import { ChatbotPanel } from '@/components/Chatbot/ChatbotPanel';
 
 import { adaptationBus } from '@/utils/adaptationBus';
 import type { AdaptationEvent } from '@/types';
 import { saveSession, loadSession } from '@/utils/persistence';
 import { useTelemetryStore } from '@/store/telemetryStore';
 import { useSessionStore } from '@/store/sessionStore';
+import { useUIStore } from '@/store/uiStore';
+import { useChatbotStore } from '@/store/chatbotStore';
 import { syncParagraphsToNlp } from '@/utils/paragraphUtils';
+import { useActiveParagraph } from '@/hooks/useActiveParagraph';
+import { useTextSelection } from '@/hooks/useTextSelection';
+import { useUIVisibility } from '@/hooks/useUIVisibility';
+import { useDynamicBrightness } from '@/hooks/useDynamicBrightness';
 import { 
   useParagraphDwell, 
   useRegressionTracker, 
@@ -24,17 +36,67 @@ import {
 export const ReadPage: React.FC = () => {
   const paragraphs = useSessionStore(s => s.paragraphs);
   const [showBreak, setShowBreak] = useState(false);
+  const burstActive = useUIStore(s => s.burstActive);
+  const focusMode = useUIStore(s => s.focusMode);
 
-  // --- Telemetry hooks (Integrated) ---
-  useTelemetryResume();                                  // 1. restore session state
-  useRegressionTracker();                                // 2. track scroll-up behavior
-  useParagraphDwell(paragraphs);                         // 3. dwell-time tracking
-  useHighlightHesitation();                              // 4. word-level hesitation
+  // --- Telemetry hooks ---
+  useTelemetryResume();
+  useRegressionTracker();
+  useParagraphDwell(paragraphs);
+  useHighlightHesitation();
 
+  // --- New hooks (Tasks 2, 3, 6, 8) ---
+  useActiveParagraph(paragraphs);
+  useTextSelection();
+  useUIVisibility();
+  useDynamicBrightness();
+
+  // Eye strain schedule
   useEyeStrainSchedule({
     onBreakDue: () => setShowBreak(true)
   });
 
+  // Context awareness for chatbot (Task 5f)
+  const activeParagraphId = useTelemetryStore(s => s.activeParagraphId);
+  useEffect(() => {
+    if (activeParagraphId) {
+      useChatbotStore.getState().setContextParagraph(activeParagraphId);
+    }
+  }, [activeParagraphId]);
+
+  // Burst cleanup (Task 6)
+  useEffect(() => {
+    if (burstActive) {
+      const timer = setTimeout(() => {
+        useUIStore.setState({ burstActive: false });
+      }, 280);
+      return () => clearTimeout(timer);
+    }
+  }, [burstActive]);
+
+  // Focus mode init on mount (Task 7)
+  useEffect(() => {
+    if (focusMode) {
+      document.documentElement.classList.add('focus-mode-active');
+    }
+    return () => {
+      document.documentElement.classList.remove('focus-mode-active');
+    };
+  }, [focusMode]);
+
+  // Keyboard shortcut: Ctrl+Shift+F for focus mode (Task 7e)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
+        e.preventDefault();
+        useUIStore.getState().toggleFocusMode();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  // Adaptation announcer
   useEffect(() => {
     const handler = (event: AdaptationEvent) => {
       const el = document.getElementById("adaptation-announcer");
@@ -53,8 +115,8 @@ export const ReadPage: React.FC = () => {
     };
   }, []);
 
+  // Session save on scroll
   const saveDebounceRef = useRef<number | undefined>(undefined);
-
   useEffect(() => {
     const onScroll = () => {
       if (saveDebounceRef.current !== undefined) {
@@ -76,6 +138,7 @@ export const ReadPage: React.FC = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Before unload save
   useEffect(() => {
     const onUnload = () => {
       const activeParagraphId = useTelemetryStore.getState().activeParagraphId;
@@ -86,6 +149,7 @@ export const ReadPage: React.FC = () => {
     return () => window.removeEventListener("beforeunload", onUnload);
   }, []);
 
+  // Session restore
   useEffect(() => {
     let cancelled = false;
 
@@ -109,6 +173,9 @@ export const ReadPage: React.FC = () => {
       if (session.paragraphs?.length) {
         useSessionStore.getState().setParagraphs(session.paragraphs);
         syncParagraphsToNlp(session.paragraphs);
+        // Save article title for chatbot context
+        const title = session.paragraphs[0]?.text?.split('\n')[0] || 'Untitled';
+        localStorage.setItem('last_article_title', title);
       }
       if (session.sessionStartTime) {
         useSessionStore.getState().setSessionStartTime(session.sessionStartTime);
@@ -153,6 +220,20 @@ export const ReadPage: React.FC = () => {
         <ReadingContainer />
       </main>
 
+      {/* Task 2c: Active paragraph indicator */}
+      <ActiveParagraphBox />
+
+      {/* Task 3c: Selection toolbar */}
+      <SelectionToolbar />
+
+      {/* Task 5: Chatbot */}
+      <ChatbotAvatar />
+      <ChatbotPanel />
+
+      {/* Task 7: Focus mode button */}
+      <FocusModeButton />
+
+      {/* Break prompt */}
       <BreakPrompt isVisible={showBreak} onDismiss={() => setShowBreak(false)} />
 
       <div
@@ -170,4 +251,3 @@ export const ReadPage: React.FC = () => {
     </motion.div>
   );
 };
-

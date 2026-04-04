@@ -1,0 +1,67 @@
+﻿node.exe : [31mfailed 
+to load config from D:\D
+evelopment\Projects\Adol
+f\Enfinity\UI\adaptive-r
+eader\vite.config.ts[39
+m
+At C:\Program 
+Files\nodejs\npx.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo      
+        : NotSpecified  
+  : ([31mfailed to .   
+ ...config.ts[39m:S    
+tring) [], RemoteEx    
+ception
+    + FullyQualifiedErr 
+   orId : NativeComman  
+  dError
+ 
+[31merror during build:
+Error 
+[ERR_MODULE_NOT_FOUND]: 
+Cannot find package 
+'vite' imported from D:\
+Development\Projects\Ado
+lf\Enfinity\UI\adaptive-
+reader\node_modules\.vit
+e-temp\vite.config.ts.ti
+mestamp-1775311467154-84
+be9dd7b4ac8.mjs
+    at Object.getPackage
+JSONURL (node:internal/m
+odules/package_json_read
+er:268:9)
+    at packageResolve (n
+ode:internal/modules/esm
+/resolve:768:81)
+    at moduleResolve (no
+de:internal/modules/esm/
+resolve:854:18)
+    at defaultResolve (n
+ode:internal/modules/esm
+/resolve:984:11)
+    at ModuleLoader.defa
+ultResolve (node:interna
+l/modules/esm/loader:780
+:12)
+    at 
+#cachedDefaultResolve (n
+ode:internal/modules/esm
+/loader:704:25)
+    at 
+ModuleLoader.resolve (no
+de:internal/modules/esm/
+loader:687:38)
+    at ModuleLoader.getM
+oduleJobForImport (node:
+internal/modules/esm/loa
+der:305:38)
+    at ModuleJob._link (
+node:internal/modules/es
+m/module_job:137:49)[39
+m

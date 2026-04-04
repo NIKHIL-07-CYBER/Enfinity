@@ -91,6 +91,12 @@ function emitAdaptation(
 // ─── triggerAdaptation handler (Phase 3 Integration) ──────────────────────────
 
 adaptationBus.on("triggerAdaptation", async (event: TriggerAdaptationEvent) => {
+  // DONE: Task 4b — Check if adaptation is enabled
+  const adaptationEnabled = typeof localStorage !== 'undefined'
+    ? localStorage.getItem('adaptation_enabled') !== 'false'
+    : true;
+  if (!adaptationEnabled) return;
+
   const { paragraphId, cfs, strugglingWord } = event;
 
   console.log(

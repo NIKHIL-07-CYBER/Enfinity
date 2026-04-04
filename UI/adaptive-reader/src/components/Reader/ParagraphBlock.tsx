@@ -1,11 +1,9 @@
+// DONE: Task 2b — Replace motion.div with plain div + CSS transitions for paragraph blocks
 import React, { useMemo, useReducer, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import type { Paragraph, AdaptationEvent } from '@/types';
 import { useTelemetryStore } from '@/store/telemetryStore';
 import { useShallow } from 'zustand/react/shallow';
 import { adaptationBus } from '@/utils/adaptationBus';
-
-const PARAGRAPH_TRANSITION = { duration: 0.4, ease: "easeInOut" as const };
 
 export const ParagraphBlock = React.memo(({ paragraph }: { paragraph: Paragraph }) => {
   const { activeParagraphId } = useTelemetryStore(
@@ -25,7 +23,7 @@ export const ParagraphBlock = React.memo(({ paragraph }: { paragraph: Paragraph 
   });
 
   const isQuote = paragraph.text.startsWith('"');
-  const minHeight = paragraph.wordCount * 2.91; // px
+  const minHeight = paragraph.wordCount * 2.91;
 
   const [adaptations, dispatch] = useReducer(
     (state: AdaptationEvent[], action: AdaptationEvent) => [...state, action],
@@ -52,7 +50,6 @@ export const ParagraphBlock = React.memo(({ paragraph }: { paragraph: Paragraph 
       if (chunk.trim() === "") return <span key={index}>{chunk}</span>;
 
       const currentIndex = wordCounter++;
-      // Separate word core from trailing punctuation e.g. "mechanisms," → "mechanisms" + ","
       const match = chunk.match(/^([a-zA-Z0-9]+)([^a-zA-Z0-9]*)$/);
       const punctuation = match ? match[2] : "";
 
@@ -83,19 +80,19 @@ export const ParagraphBlock = React.memo(({ paragraph }: { paragraph: Paragraph 
   }, [paragraph.text, adaptations]);
 
   return (
-    <motion.div
-      layoutId={paragraph.id}
-      initial={false}
+    <div
       data-paragraph-id={paragraph.id}
-      animate={{
-        opacity: isActive ? 1 : 0.45,
-        backgroundColor: isActive ? "rgba(24,95,165,0.04)" : (isQuote ? "var(--accent-blue-light)" : "transparent"),
+      style={{
+        transition: 'opacity 250ms ease-out, background-color 250ms ease-out',
+        opacity: isActive ? 1 : 0.42,
+        backgroundColor: isActive ? 'rgba(24, 95, 165, 0.035)' : (isQuote ? 'var(--accent-blue-light)' : 'transparent'),
         borderLeft: isStruggling
-          ? "3px solid rgba(24,95,165,0.5)"
-          : (isQuote ? "3px solid var(--accent-blue)" : "3px solid transparent"),
+          ? '2.5px solid rgba(24,95,165,0.5)'
+          : (isActive ? '2.5px solid rgba(24,95,165,0.35)' : '2.5px solid transparent'),
+        paddingLeft: '12px',
+        willChange: 'opacity',
+        minHeight: `${minHeight}px`,
       }}
-      transition={PARAGRAPH_TRANSITION}
-      style={{ minHeight: `${minHeight}px` }}
       className={`mb-8 p-4 rounded paragraph-block ${isStruggling ? "paragraph-struggling" : ""} ${isQuote ? 'pl-6' : ''}`}
     >
       <p style={{
@@ -106,7 +103,7 @@ export const ParagraphBlock = React.memo(({ paragraph }: { paragraph: Paragraph 
       }}>
         {renderedWords}
       </p>
-    </motion.div>
+    </div>
   );
 });
 
