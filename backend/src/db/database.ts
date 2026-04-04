@@ -1,5 +1,12 @@
 import Dexie, { Table } from 'dexie';
 
+// Polyfill IndexedDB for Node.js environments to prevent crash
+if (typeof window === 'undefined') {
+  const { indexedDB, IDBKeyRange } = require('fake-indexeddb');
+  Dexie.dependencies.indexedDB = indexedDB;
+  Dexie.dependencies.IDBKeyRange = IDBKeyRange;
+}
+
 export interface TelemetryEvent {
   id?: number;
   paragraphId: string;

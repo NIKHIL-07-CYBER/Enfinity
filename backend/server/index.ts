@@ -4,8 +4,29 @@ import cors from 'cors';
 const app = express();
 const PORT = 3001;
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+// Allow multi-port local development setups completely to avoid Frontend team blockers
+const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:3000'];
+app.use(cors({ 
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Strict CORS restriction'));
+    }
+  } 
+}));
 app.use(express.json());
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    if (duration > 410) {
+      console.warn(`[SLOW] ${req.method} ${req.url} took ${duration}ms`);
+    }
+  });
+  next();
+});
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -50,6 +71,37 @@ app.post('/api/translate', async (req, res) => {
       console.error('Both translation services failed', fallbackError);
       return res.status(500).json({ error: 'Both local Docker and fallback translations failed' });
     }
+  }
+});
+
+app.post('/api/simplify', async (req, res) => {
+  const { word } = req.body;
+  if (!word) return res.status(400).json({ error: 'Word is required' });
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+  try {
+    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`, {
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Failed to fetch synonyms' });
+    }
+
+    const data = await response.json();
+    const synonyms = data[0]?.meanings[0]?.synonyms?.slice(0, 3) || [];
+    const definition = data[0]?.meanings[0]?.definitions[0]?.definition || '';
+
+    return res.json({ synonyms, definition });
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      return res.status(504).json({ error: 'Gateway Timeout' });
+    }
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
