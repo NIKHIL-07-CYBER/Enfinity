@@ -26,12 +26,12 @@ export function useRegressionTracker(): { regressionRate: number } {
           return;
         }
 
-        setTotalScrolls((prev) => {
+        setTotalScrolls((prev: number) => {
           const nextTotal = prev + 1;
 
           if (delta < 0) {
             // Scrolled up — regression
-            setRegressionCount((prevReg) => {
+            setRegressionCount((prevReg: number) => {
               const nextReg = prevReg + 1;
               const rate = nextTotal > 0 ? nextReg / nextTotal : 0;
               setGlobalRegressionRate(rate);
@@ -39,7 +39,7 @@ export function useRegressionTracker(): { regressionRate: number } {
             });
           } else {
             // Scrolled down — normal reading
-            setRegressionCount((prevReg) => {
+            setRegressionCount((prevReg: number) => {
               const rate = nextTotal > 0 ? prevReg / nextTotal : 0;
               setGlobalRegressionRate(rate);
               return prevReg;

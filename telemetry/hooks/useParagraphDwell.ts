@@ -91,7 +91,7 @@ export function useParagraphDwell(paragraphs: ParagraphMeta[]): void {
     // Cleanup
     return () => {
       observer.disconnect();
-      for (const timerId of Object.values(exitTimers.current)) {
+      for (const timerId of Object.values(exitTimers.current) as ReturnType<typeof setTimeout>[]) {
         clearTimeout(timerId);
       }
       exitTimers.current = {};
@@ -107,7 +107,7 @@ export function useParagraphDwell(paragraphs: ParagraphMeta[]): void {
 
       const now = Date.now();
 
-      for (const [id, entryTime] of Object.entries(entryTimes.current)) {
+      for (const [id, entryTime] of Object.entries(entryTimes.current) as [string, number][]) {
         const paragraph = paragraphs.find((p) => p.id === id);
         if (!paragraph) continue;
 

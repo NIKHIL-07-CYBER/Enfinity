@@ -65,7 +65,7 @@ export function useTelemetryResume(): void {
         }
       }
 
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env?.DEV) {
         console.log(
           '[TELEMETRY] Session resumed, loaded',
           Object.keys(struggleLog).length,

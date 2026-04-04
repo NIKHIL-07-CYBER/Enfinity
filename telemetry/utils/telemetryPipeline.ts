@@ -19,7 +19,7 @@ declare global {
 // ---------------------------------------------------------------------------
 const adaptationBus = {
   emit: (event: string, data: unknown) => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env?.DEV) {
       console.log('[adaptationBus STUB]', event, data);
     }
   },

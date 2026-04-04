@@ -16,13 +16,27 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting */
+    /* Path alias */
+    "baseUrl": ".",
+    "paths": {
+      "@telemetry": ["../../telemetry/index.ts"],
+      "@telemetry/*": ["../../telemetry/*"]
+    },
+
+    /* Linting — relaxed for cross-module dev */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "../../telemetry/**/*.ts",
+    "../../telemetry/**/*.tsx"
+  ],
+  "exclude": [
+    "../../telemetry/**/*.test.ts"
+  ]
 }

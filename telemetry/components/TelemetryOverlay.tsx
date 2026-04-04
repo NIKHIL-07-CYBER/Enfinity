@@ -17,7 +17,7 @@ export function TelemetryOverlay() {
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-        setVisible((v) => !v);
+        setVisible((v: boolean) => !v);
       }
     }
 

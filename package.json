@@ -1,0 +1,12 @@
+{
+  "name": "enfinity",
+  "private": true,
+  "workspaces": [
+    "UI/adaptive-reader",
+    "telemetry"
+  ],
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3"
+  }
+}

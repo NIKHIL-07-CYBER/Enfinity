@@ -1,0 +1,17 @@
+{
+  "name": "telemetry",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.2"
+  }
+}
