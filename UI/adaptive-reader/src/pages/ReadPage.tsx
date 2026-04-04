@@ -12,6 +12,7 @@ import type { AdaptationEvent } from '@/types';
 import { saveSession, loadSession } from '@/utils/persistence';
 import { useTelemetryStore } from '@/store/telemetryStore';
 import { useSessionStore } from '@/store/sessionStore';
+import { syncParagraphsToNlp } from '@/utils/paragraphUtils';
 import { 
   useParagraphDwell, 
   useRegressionTracker, 
@@ -67,6 +68,7 @@ export const ReadPage: React.FC = () => {
           scrollY: window.scrollY,
           appliedAdaptations: [],
           sessionStartTime,
+          paragraphs: useSessionStore.getState().paragraphs,
         }).catch(() => {});
       }, 5000);
     };
@@ -85,8 +87,7 @@ export const ReadPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const paragraphs = useSessionStore.getState().paragraphs;
-    if (paragraphs.length === 0) return;
+    let cancelled = false;
 
     async function restore() {
       let session = await loadSession().catch(() => null);
@@ -95,6 +96,7 @@ export const ReadPage: React.FC = () => {
         const lastY = localStorage.getItem("last_scroll_y");
         if (lastId) {
           session = {
+            id: "current",
             lastParagraphId: lastId,
             scrollY: Number(lastY) || 0,
             appliedAdaptations: [],
@@ -102,17 +104,34 @@ export const ReadPage: React.FC = () => {
           };
         }
       }
-      if (!session) return;
+      if (cancelled || !session) return;
 
-      const sessionObj = session; 
-      const el = document.querySelector(`[data-paragraph-id="${sessionObj.lastParagraphId}"]`);
-      if (el) {
-        setTimeout(() => el.scrollIntoView({ behavior: "instant", block: "start" }), 150);
-      } else {
-        setTimeout(() => window.scrollTo({ top: sessionObj.scrollY, behavior: "instant" }), 150);
+      if (session.paragraphs?.length) {
+        useSessionStore.getState().setParagraphs(session.paragraphs);
+        syncParagraphsToNlp(session.paragraphs);
       }
+      if (session.sessionStartTime) {
+        useSessionStore.getState().setSessionStartTime(session.sessionStartTime);
+      }
+
+      const scrollToSession = () => {
+        const el = document.querySelector(
+          `[data-paragraph-id="${session.lastParagraphId}"]`,
+        );
+        if (el) {
+          el.scrollIntoView({ behavior: "instant", block: "start" });
+        } else {
+          window.scrollTo({ top: session.scrollY, behavior: "instant" });
+        }
+      };
+
+      setTimeout(scrollToSession, session.paragraphs?.length ? 200 : 0);
     }
+
     restore();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (

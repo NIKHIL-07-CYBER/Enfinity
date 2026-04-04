@@ -27,4 +27,6 @@ export interface SessionState {
   scrollY: number;
   appliedAdaptations: AdaptationEvent[];
   sessionStartTime: number;
+  /** Full document from last ingest — restored after hard refresh so NLP + review stay aligned. */
+  paragraphs?: Paragraph[];
 }

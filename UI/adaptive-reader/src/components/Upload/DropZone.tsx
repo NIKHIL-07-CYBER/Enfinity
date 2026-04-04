@@ -3,7 +3,8 @@ import { useDropzone, type FileRejection } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
 import { useSessionStore } from '@/store/sessionStore';
-import { parseFile } from '@/utils/paragraphUtils';
+import { parseFile, syncParagraphsToNlp } from '@/utils/paragraphUtils';
+import { saveSession } from '@/utils/persistence';
 import type { Paragraph } from '@/types';
 
 export const DropZone: React.FC = () => {
@@ -23,20 +24,18 @@ export const DropZone: React.FC = () => {
 
     setStatus("parsing");
     try {
-      let paragraphs: Paragraph[] = [];
-      if (typeof parseFile === 'function') {
-        paragraphs = await parseFile(file);
-      } else {
-        // inline stub fallback
-        const text = await file.text();
-        paragraphs = text.split("\n\n").filter(Boolean).map((t, i) => ({
-          id: `p-${String(i + 1).padStart(3, "0")}`,
-          text: t.trim(),
-          wordCount: t.split(" ").length,
-          daleChallScore: 5,
-        }));
-      }
+      const paragraphs = await parseFile(file);
+      const sessionStartTime = Date.now();
+      useSessionStore.getState().setSessionStartTime(sessionStartTime);
       useSessionStore.getState().setParagraphs(paragraphs);
+      syncParagraphsToNlp(paragraphs);
+      await saveSession({
+        lastParagraphId: paragraphs[0]?.id ?? '',
+        scrollY: 0,
+        appliedAdaptations: [],
+        sessionStartTime,
+        paragraphs,
+      });
       setStatus("success");
       
       // Navigate on next tick so UI can flash success if it wants

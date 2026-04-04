@@ -7,16 +7,21 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "smoke": "vitest run src/smoke.integration.test.ts"
   },
   "dependencies": {
+    "compromise": "^14.15.0",
+    "dale-chall": "^2.0.1",
     "eventemitter3": "^5.0.4",
     "framer-motion": "^12.38.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-dropzone": "^15.0.0",
+    "marked": "^17.0.5",
     "react-router-dom": "^7.14.0",
-    "zustand": "^5.0.12"
+    "zustand": "^5.0.12",
+    "dexie": "^4.4.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -34,6 +39,7 @@
     "tailwindcss": "^4.2.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
-    "vite": "^8.0.1"
+    "vite": "^8.0.1",
+    "vitest": "^4.1.2"
   }
 }

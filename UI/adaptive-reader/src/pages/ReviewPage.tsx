@@ -5,12 +5,10 @@ import { TermCard } from '@/components/Review/TermCard';
 import { StrugglePoint } from '@/components/Review/StrugglePoint';
 import { useConceptStore } from "@/store/conceptStore";
 import { loadSession } from "@/utils/persistence";
-import { getParagraphById, getParagraphs } from "@/utils/paragraphUtils";
+import { getParagraphById, getParagraphs, syncParagraphsToNlp } from "@/utils/paragraphUtils";
+import { useSessionStore } from "@/store/sessionStore";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-
-const DEMO_TERMS = ["ubiquitous", "cognate", "telemetry", "hyperlexic", "morpheme"];
-const DEMO_PARAGRAPHS = ["The multiplicative nature of the formula..."];
 
 export const ReviewPage: React.FC = () => {
   const navigate = useNavigate();
@@ -24,6 +22,10 @@ export const ReviewPage: React.FC = () => {
   useEffect(() => {
     async function loadData() {
       const session = await loadSession().catch(() => null);
+      if (session?.paragraphs?.length) {
+        useSessionStore.getState().setParagraphs(session.paragraphs);
+        syncParagraphsToNlp(session.paragraphs);
+      }
       if (session?.sessionStartTime) {
         const elapsed = Date.now() - session.sessionStartTime;
         const minutes = elapsed > 86400000
@@ -43,13 +45,13 @@ export const ReviewPage: React.FC = () => {
     loadData();
   }, []);
 
-  const terms = struggledTerms.length > 0 ? struggledTerms : DEMO_TERMS;
-  const paragraphExcerpts = struggledParagraphs.length > 0
-    ? struggledParagraphs.map(id => {
-        const p = getParagraphById(id);
-        return p ? p.text.slice(0, 100) + "..." : "";
-      }).filter(Boolean)
-    : DEMO_PARAGRAPHS;
+  const terms = struggledTerms;
+  const paragraphExcerpts = struggledParagraphs
+    .map((id) => {
+      const p = getParagraphById(id);
+      return p ? `${p.text.slice(0, 120)}…` : "";
+    })
+    .filter(Boolean);
 
   return (
     <div className="min-h-screen relative overflow-x-hidden" style={{ backgroundColor: 'var(--bg-color)' }}>
@@ -74,11 +76,17 @@ export const ReviewPage: React.FC = () => {
 
             <section className="mb-16">
               <h2 className="text-xl font-bold mb-6 text-gray-900">Terms to Review</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {terms.map((term, i) => (
-                  <TermCard key={i} category={i % 2 === 0 ? "REVIEW" : "FOCUS"} term={term} definition="Definition pending synthesis..." />
-                ))}
-              </div>
+              {terms.length === 0 ? (
+                <p className="text-sm opacity-70" style={{ color: 'var(--text-color)' }}>
+                  No difficult terms recorded yet. They appear when comprehension friction spikes on a paragraph.
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {terms.map((term, i) => (
+                    <TermCard key={i} category={i % 2 === 0 ? "REVIEW" : "FOCUS"} term={term} definition="Definition pending synthesis..." />
+                  ))}
+                </div>
+              )}
             </section>
 
             <section className="mb-16">
@@ -90,15 +98,21 @@ export const ReviewPage: React.FC = () => {
                 </div>
               </div>
               
-              {paragraphExcerpts.map((excerpt, i) => (
-                <StrugglePoint 
-                  key={i}
-                  quote={excerpt} 
-                  highlightedWord="" 
-                  chapter="CURRENT" 
-                  page={1} 
-                />
-              ))}
+              {paragraphExcerpts.length === 0 ? (
+                <p className="text-sm opacity-70" style={{ color: 'var(--text-color)' }}>
+                  No struggled paragraphs yet. Scroll through text (or use Simulate Struggle in the debug overlay) to record friction.
+                </p>
+              ) : (
+                paragraphExcerpts.map((excerpt, i) => (
+                  <StrugglePoint
+                    key={i}
+                    quote={excerpt}
+                    highlightedWord=""
+                    chapter="CURRENT"
+                    page={1}
+                  />
+                ))
+              )}
             </section>
 
             <div className="flex justify-center mb-8 px-4 gap-4">

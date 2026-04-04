@@ -5,7 +5,7 @@ export const useScrollVelocity = () => {
   const [velocity, setVelocity] = useState(0);
   const lastY = useRef(typeof window !== 'undefined' ? window.scrollY : 0);
   const lastT = useRef(Date.now());
-  const idleTimeout = useRef<number | undefined>(undefined);
+  const idleTimeout = useRef<ReturnType<typeof window.setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     const handleScroll = () => {

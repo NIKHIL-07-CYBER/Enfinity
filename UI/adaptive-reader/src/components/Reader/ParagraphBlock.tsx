@@ -17,9 +17,12 @@ export const ParagraphBlock = React.memo(({ paragraph }: { paragraph: Paragraph 
 
   const isActive = activeParagraphId === paragraph.id;
 
-  const isStruggling = useTelemetryStore(
-    s => s.latestCFS?.paragraphId === paragraph.id && (s.latestCFS?.cfs ?? 0) > 1.5
-  );
+  const isStruggling = useTelemetryStore((s) => {
+    const peak = s.struggleLog[paragraph.id] ?? 0;
+    const live =
+      s.latestCFS?.paragraphId === paragraph.id && (s.latestCFS?.cfs ?? 0) > 1.5;
+    return peak > 1.5 || live;
+  });
 
   const isQuote = paragraph.text.startsWith('"');
   const minHeight = paragraph.wordCount * 2.91; // px

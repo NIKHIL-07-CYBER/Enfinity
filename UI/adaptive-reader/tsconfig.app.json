@@ -21,7 +21,9 @@
     "paths": {
       "@/*": ["src/*"],
       "@telemetry": ["../../telemetry/index.ts"],
-      "@telemetry/*": ["../../telemetry/*"]
+      "@telemetry/*": ["../../telemetry/*"],
+      "@backend/*": ["../../backend/src/*"],
+      "@nlp/*": ["../../nlp/src/*"]
     },
 
     /* Linting — relaxed for cross-module dev */
@@ -35,9 +37,12 @@
   "include": [
     "src",
     "../../telemetry/**/*.ts",
-    "../../telemetry/**/*.tsx"
+    "../../telemetry/**/*.tsx",
+    "../../backend/src/**/*.ts",
+    "../../nlp/src/**/*.ts"
   ],
   "exclude": [
-    "../../telemetry/**/*.test.ts"
+    "../../telemetry/**/*.test.ts",
+    "../../backend/**/*.test.ts"
   ]
 }
