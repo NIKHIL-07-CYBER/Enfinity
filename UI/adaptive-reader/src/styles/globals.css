@@ -3,21 +3,31 @@
 :root {
   --bg-color: #FDFCF9;
   --text-color: #1a1a18;
+  --sidebar-bg: #F5F3EE;
+  --accent-blue: #185FA5;
+  --accent-blue-light: rgba(24, 95, 165, 0.06);
+  --nav-text: #888880;
+  --card-border: #E8E4DC;
+  --toast-bg: rgba(20, 40, 80, 0.92);
   --font-weight: 400;
   --line-height: 1.75;
   --font-size: 18px;
   --max-width: 680px;
   --chrome-opacity: 1;
   --paragraph-opacity: 1;
+  --active-paragraph-bg: transparent;
 }
 
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
+  font-family: 'Atkinson Hyperlegible', sans-serif;
   font-weight: var(--font-weight);
   line-height: var(--line-height);
   font-size: var(--font-size);
   transition: all 0.8s ease;
+  margin: 0;
+  padding: 0;
 }
 
 * {

@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Demo Assets
+!adaptive-reader-demo.mp4
