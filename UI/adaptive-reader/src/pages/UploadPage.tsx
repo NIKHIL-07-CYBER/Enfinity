@@ -5,14 +5,14 @@ import { RecentDocuments } from '@/components/Upload/RecentDocuments';
 
 export const UploadPage: React.FC = () => {
   return (
-    <div className="min-h-screen relative flex flex-col items-center pt-32 pb-8" style={{ backgroundColor: 'var(--bg-color)' }}>
+    <div className="min-h-screen relative flex flex-col items-center pt-32 pb-8 overflow-x-hidden" style={{ backgroundColor: 'var(--bg-color)' }}>
       <TopNav />
       
       <main className="w-full flex-1 flex flex-col items-center">
-        <h1 className="text-[54px] mb-4 text-center" style={{ fontFamily: '"Atkinson Hyperlegible", serif', fontWeight: 700, color: 'var(--text-color)' }}>
+        <h1 className="text-[54px] mb-4 text-center max-w-full px-4" style={{ fontFamily: '"Atkinson Hyperlegible", serif', fontWeight: 700, color: 'var(--text-color)' }}>
           Ingest
         </h1>
-        <p className="text-center text-[17px] mb-12 max-w-[600px] px-4" style={{ color: 'var(--nav-text)', lineHeight: 1.6 }}>
+        <p className="text-center text-[17px] mb-12 max-w-[600px] px-6 sm:px-4" style={{ color: 'var(--nav-text)', lineHeight: 1.6 }}>
           Provide the vessel for your next exploration. The system will adapt to your rhythm as you commit your words to the breathing canvas.
         </p>
 

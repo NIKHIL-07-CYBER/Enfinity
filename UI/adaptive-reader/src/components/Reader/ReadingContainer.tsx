@@ -42,7 +42,7 @@ export const ReadingContainer: React.FC = () => {
 
   if (!paragraphs || paragraphs.length === 0) {
     return (
-      <div className="w-full max-w-[680px] mx-auto px-12 py-32 text-center">
+      <div className="w-full max-w-[680px] mx-auto px-6 sm:px-12 py-32 text-center">
         <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-color)' }}>No document loaded</h2>
         <Link to={ROUTES.upload} className="underline" style={{ color: 'var(--accent-blue)' }}>Go to Ingest</Link>
       </div>
@@ -54,7 +54,7 @@ export const ReadingContainer: React.FC = () => {
   const title = paragraphs[0]?.text.split('\n')[0] || "Untitled";
 
   return (
-    <div style={{ padding: '0 48px', maxWidth: '680px', margin: '0 auto' }}>
+    <div className="w-full max-w-[680px] mx-auto px-6 sm:px-12">
       <div className="mb-12 mt-12">
         <div style={{ color: 'var(--nav-text)' }} className="text-xs uppercase tracking-widest font-bold mb-4">
           CHAPTER 01 • {readMins} MIN READ • WORD COUNT: {totalWords.toLocaleString()}

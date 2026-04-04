@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { TopNav } from '@/components/Layout/TopNav';
 import { SidebarNav } from '@/components/Layout/SidebarNav';
 import { ReadingContainer } from '@/components/Reader/ReadingContainer';
@@ -19,7 +20,6 @@ export const ReadPage: React.FC = () => {
     onBreakDue: () => setShowBreak(true)
   });
 
-  // Checkpoint 2.7: ARIA announcer for screen readers
   useEffect(() => {
     const handler = (event: AdaptationEvent) => {
       const el = document.getElementById("adaptation-announcer");
@@ -38,7 +38,6 @@ export const ReadPage: React.FC = () => {
     };
   }, []);
 
-  // Checkpoint 3.4: Session persistence
   const saveDebounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
@@ -89,7 +88,7 @@ export const ReadPage: React.FC = () => {
       }
       if (!session) return;
 
-      const sessionObj = session; // typescript inference
+      const sessionObj = session; 
       const el = document.querySelector(`[data-paragraph-id="${sessionObj.lastParagraphId}"]`);
       if (el) {
         setTimeout(() => el.scrollIntoView({ behavior: "instant", block: "start" }), 150);
@@ -101,13 +100,20 @@ export const ReadPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen relative" style={{ backgroundColor: 'var(--bg-color)' }}>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+      className="min-h-screen relative overflow-x-hidden" 
+      style={{ backgroundColor: 'var(--bg-color)' }}
+    >
       <ChromeShell>
         <TopNav />
       </ChromeShell>
       <SidebarNav activePage="reader" />
       
-      <main className="pl-[160px] pb-32 pt-24">
+      <main className="pl-[160px] pb-32 pt-24 w-full sm:pl-[160px] max-sm:pl-0">
         <ReadingContainer />
       </main>
 
@@ -125,7 +131,7 @@ export const ReadPage: React.FC = () => {
           overflow: "hidden",
         }}
       />
-    </div>
+    </motion.div>
   );
 };
 

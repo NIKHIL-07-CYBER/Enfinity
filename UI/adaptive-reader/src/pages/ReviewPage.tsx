@@ -52,11 +52,11 @@ export const ReviewPage: React.FC = () => {
     : DEMO_PARAGRAPHS;
 
   return (
-    <div className="min-h-screen relative" style={{ backgroundColor: 'var(--bg-color)' }}>
+    <div className="min-h-screen relative overflow-x-hidden" style={{ backgroundColor: 'var(--bg-color)' }}>
       <TopNav />
       <SidebarNav activePage="reader" />
       
-      <main className="pl-[160px] pb-16 pt-32 w-full max-w-[800px] mx-auto pr-8">
+      <main className="w-full max-w-[800px] mx-auto pb-16 pt-32 px-6 sm:pr-8 sm:pl-[160px] max-sm:pl-6">
         {loading ? (
           <div className="text-center py-20 text-gray-500">Loading...</div>
         ) : (
