@@ -28,17 +28,32 @@ export interface SessionState {
   [key: string]: any;
 }
 
+export interface StoredDocument {
+  id: string;
+  title: string;
+  content: string;
+  userId: string;
+  createdAt: string;
+}
+
 export class AdaptiveReaderDatabase extends Dexie {
   telemetry!: Table<TelemetryEvent, number>;
   adaptations!: Table<StoredAdaptation, number>;
   session!: Table<SessionState, string>;
+  documents!: Table<StoredDocument, string>;
 
   constructor() {
     super('adaptive-reader-v1');
     this.version(1).stores({
       telemetry: '++id, paragraphId, timestamp',
       adaptations: '++id, paragraphId, originalWord, timestamp',
-      session: 'id'
+      session: 'id',
+    });
+    this.version(2).stores({
+      telemetry: '++id, paragraphId, timestamp',
+      adaptations: '++id, paragraphId, originalWord, timestamp',
+      session: 'id',
+      documents: 'id, userId, title, createdAt',
     });
   }
 }

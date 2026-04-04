@@ -1,4 +1,6 @@
-/* Sepia mode — warm paper tokens */
+/* ===================================================================
+   Sepia mode — warm paper tokens
+   =================================================================== */
 html.sepia {
   --bg-primary: #f5f0e4;
   --bg-secondary: #ede8d8;
@@ -6,48 +8,79 @@ html.sepia {
   --text-primary: #3d2b1f;
   --text-secondary: #6b4c35;
   --text-tertiary: #8a6b52;
-  --border-color: rgba(109, 76, 53, 0.2);
-  --border-hover: rgba(109, 76, 53, 0.35);
-  --accent-blue: #185fa5;
-  --accent-blue-bg: rgba(24, 95, 165, 0.1);
-  --selection-bg: rgba(24, 95, 165, 0.15);
-  /* Legacy aliases used across the app */
-  --bg-color: var(--bg-primary);
-  --text-color: var(--text-primary);
-  --sidebar-bg: var(--bg-secondary);
-  --nav-text: var(--text-secondary);
-  --card-border: var(--border-color);
-  --accent-blue-light: var(--accent-blue-bg);
-}
+  --border-color: rgba(109, 76, 53, 0.22);
+  --border-hover: rgba(109, 76, 53, 0.38);
+  --accent-blue: #1a5fa8;
+  --accent-blue-bg: rgba(26, 95, 168, 0.1);
+  --accent-blue-light: rgba(26, 95, 168, 0.1);
+  --selection-bg: rgba(26, 95, 168, 0.15);
+  --accent-border-subtle: rgba(26, 95, 168, 0.3);
+  --accent-border-strong: rgba(26, 95, 168, 0.55);
+  --accent-surface: rgba(26, 95, 168, 0.08);
+  --toolbar-surface: color-mix(in srgb, #ede8d8 92%, #1a5fa8 8%);
+  --toolbar-on-accent: #ffffff;
 
-/* Dark mode token overrides */
-html.dark {
-  --bg-primary: #0f1117;
-  --bg-secondary: #1a1d27;
-  --bg-tertiary: #242736;
-  --text-primary: #e8e6e0;
-  --text-secondary: #9c9a92;
-  --text-tertiary: #5c5a54;
-  --border-color: rgba(232, 230, 224, 0.12);
-  --border-hover: rgba(232, 230, 224, 0.22);
-  --accent-blue: #4a8fd4;
-  --accent-blue-bg: rgba(74, 143, 212, 0.12);
-  --selection-bg: rgba(74, 143, 212, 0.18);
-  --toast-bg: rgba(15, 17, 23, 0.92);
   /* Legacy aliases */
   --bg-color: var(--bg-primary);
   --text-color: var(--text-primary);
   --sidebar-bg: var(--bg-secondary);
   --nav-text: var(--text-secondary);
   --card-border: var(--border-color);
-  --accent-blue-light: var(--accent-blue-bg);
+
+  /* Apply warm background and dark-brown text to all inheriting elements */
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
+/* ===================================================================
+   Dark mode token overrides
+   =================================================================== */
+html.dark {
+  --bg-primary: #0f1117;
+  --bg-secondary: #17191f;
+  --bg-tertiary: #1e2130;
+  --text-primary: #edebe4;
+  --text-secondary: #9b9893;
+  --text-tertiary: #5e5c57;
+  --border-color: rgba(237, 235, 228, 0.11);
+  --border-hover: rgba(237, 235, 228, 0.22);
+  --accent-blue: #6aabec;
+  --accent-blue-bg: rgba(106, 171, 236, 0.13);
+  --accent-blue-light: rgba(106, 171, 236, 0.13);
+  --selection-bg: rgba(106, 171, 236, 0.22);
+  --accent-border-subtle: rgba(106, 171, 236, 0.32);
+  --accent-border-strong: rgba(106, 171, 236, 0.58);
+  --accent-surface: rgba(106, 171, 236, 0.1);
+  --toolbar-surface: color-mix(in srgb, #17191f 90%, #6aabec 10%);
+  --toolbar-on-accent: #ffffff;
+  --toast-bg: rgba(15, 17, 23, 0.94);
+
+  /* Legacy aliases */
+  --bg-color: var(--bg-primary);
+  --text-color: var(--text-primary);
+  --sidebar-bg: var(--bg-secondary);
+  --nav-text: var(--text-secondary);
+  --card-border: var(--border-color);
+
+  /* Force the root element to use dark colours so all inheriting children get white text */
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+
+
+/* ── Reading container ─────────────────────────────────────────── */
 html.dark .reading-container {
   background: var(--bg-primary);
   color: var(--text-primary);
 }
 
+html.sepia .reading-container {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* ── Nav / Chrome shell ────────────────────────────────────────── */
 html.dark .chrome-shell,
 html.dark nav,
 html.dark header {
@@ -55,22 +88,128 @@ html.dark header {
   border-bottom-color: var(--border-color) !important;
 }
 
+html.sepia .chrome-shell,
+html.sepia nav,
+html.sepia header {
+  background: var(--bg-secondary) !important;
+  border-bottom-color: var(--border-color) !important;
+}
+
+/* ── Chatbot panel ─────────────────────────────────────────────── */
 html.dark .chatbot-panel {
   background: var(--bg-secondary) !important;
   border-color: var(--border-color) !important;
 }
 
-html.dark mark {
-  filter: brightness(0.85);
+html.sepia .chatbot-panel {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
 }
 
+/* ── Highlights ────────────────────────────────────────────────── */
+html.dark mark {
+  filter: brightness(0.8) saturate(0.85);
+}
+
+/* ── Inputs & textareas ────────────────────────────────────────── */
 html.dark input,
-html.dark textarea {
+html.dark textarea,
+html.dark select {
   background: var(--bg-tertiary) !important;
   color: var(--text-primary) !important;
   border-color: var(--border-color) !important;
 }
 
-html.dark button {
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: var(--text-tertiary) !important;
+}
+
+html.sepia input,
+html.sepia textarea,
+html.sepia select {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+html.sepia input::placeholder,
+html.sepia textarea::placeholder {
+  color: var(--text-tertiary) !important;
+}
+
+/* ── Buttons — only fix un-accented buttons, never override accent ─
+   Apply a base text colour to buttons that haven't been styled with
+   an inline `color` already. We do this via a lower-specificity rule
+   so that inline styles (which have higher specificity) always win.
+   ──────────────────────────────────────────────────────────────── */
+html.dark button:not([style*="color"]) {
   color: var(--text-primary);
+}
+
+html.sepia button:not([style*="color"]) {
+  color: var(--text-primary);
+}
+
+/* ── Cards and panels ─────────────────────────────────────────── */
+html.dark [style*="--bg-secondary"],
+html.dark [style*="background: var(--bg-secondary)"],
+html.dark [style*="background:var(--bg-secondary)"] {
+  background: var(--bg-secondary) !important;
+}
+
+/* ── Scrollbar in dark mode ───────────────────────────────────── */
+html.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* ── Sepia scrollbar ──────────────────────────────────────────── */
+html.sepia ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+html.sepia ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+html.sepia ::-webkit-scrollbar-thumb {
+  background: rgba(109, 76, 53, 0.25);
+  border-radius: 3px;
+}
+
+html.sepia ::-webkit-scrollbar-thumb:hover {
+  background: rgba(109, 76, 53, 0.4);
+}
+
+/* ── Selection highlight ──────────────────────────────────────── */
+html.dark ::selection {
+  background: var(--selection-bg);
+}
+
+html.sepia ::selection {
+  background: var(--selection-bg);
+}
+
+/* ── Focus ring ───────────────────────────────────────────────── */
+html.dark :focus-visible {
+  outline-color: var(--accent-blue);
+}
+
+html.sepia :focus-visible {
+  outline-color: var(--accent-blue);
 }

@@ -50,12 +50,23 @@
   }
 }
 
+/* Override index.css heading color in dark/sepia modes so they use theme tokens */
+html.dark h1,
+html.dark h2 {
+  color: var(--text-primary, #edebe4);
+}
+
+html.sepia h1,
+html.sepia h2 {
+  color: var(--text-primary, #3d2b1f);
+}
+
 #root {
   width: 1126px;
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
-  border-inline: 1px solid var(--border);
+  border-inline: 1px solid var(--border-color, var(--border));
   min-height: 100svh;
   display: flex;
   flex-direction: column;

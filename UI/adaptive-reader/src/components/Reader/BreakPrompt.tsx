@@ -26,10 +26,10 @@ export const BreakPrompt: React.FC<BreakPromptProps> = ({ isVisible, onDismiss }
           className="fixed bottom-6 right-6 z-50 pointer-events-auto flex items-start gap-4"
           style={{
             backgroundColor: 'var(--toast-bg)',
-            color: '#fff',
+            color: 'var(--toolbar-on-accent)',
             borderRadius: '12px',
             padding: '16px 20px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            boxShadow: '0 4px 12px color-mix(in srgb, var(--text-primary) 12%, transparent)',
           }}
         >
           <span style={{ fontSize: '15px' }} className="flex-1 mt-0.5">

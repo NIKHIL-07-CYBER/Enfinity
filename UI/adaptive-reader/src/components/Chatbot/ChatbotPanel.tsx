@@ -27,8 +27,8 @@ function computePanelStyle(avatarConfig: AvatarConfig, winW: number, winH: numbe
 
   const avatarBottomPx = (avatarConfig.positionY / 100) * winH;
   const panelBottom = avatarBottomPx + avatarConfig.size + GAP;
-  const rightOff = (avatarConfig.positionX / 100) * winW;
-  const panelRight = Math.max(8, rightOff);
+  const avatarRightPx = (avatarConfig.positionX / 100) * winW;
+  const panelRight = Math.max(8, winW - avatarRightPx - avatarConfig.size);
 
   const panelTopFromBottom = panelBottom + PANEL_MAX_HEIGHT;
   const panelTopFromViewportTop = winH - panelTopFromBottom;

@@ -84,7 +84,7 @@ export const ParagraphBlock = React.memo(({ paragraph }: { paragraph: Paragraph 
       data-paragraph-id={paragraph.id}
       style={{
         transition: 'opacity 250ms ease-out, background-color 250ms ease-out',
-        opacity: isActive ? 1 : 0.42,
+        opacity: isActive ? 1 : 0.65,
         backgroundColor: isActive ? 'var(--accent-blue-bg)' : (isQuote ? 'var(--accent-blue-light)' : 'transparent'),
         borderLeft: isStruggling
           ? `3px solid var(--accent-border-strong)`

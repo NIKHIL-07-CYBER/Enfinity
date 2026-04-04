@@ -1,6 +1,9 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
+import { registerDocumentRoutes } from './routes/documents';
+import { registerSummarizeRoutes } from './routes/summarize';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -227,6 +230,9 @@ app.post('/api/chat', async (req, res) => {
     }));
   }
 });
+
+registerDocumentRoutes(app);
+registerSummarizeRoutes(app);
 
 app.listen(PORT, () => {
   console.warn(`Express Proxy Server listening on port ${PORT}`);

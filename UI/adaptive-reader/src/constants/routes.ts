@@ -6,4 +6,6 @@ export const ROUTES = {
   archive: '/archive',
   settings: '/settings',
   saved: '/saved',
+  auth: '/auth',
+  dashboard: '/dashboard',
 } as const;

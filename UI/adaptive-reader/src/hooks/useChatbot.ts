@@ -1,5 +1,7 @@
 // DONE: Task 5b — Chatbot hook
 import { useChatbotStore } from '@/store/chatbotStore';
+
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:3001';
 import { useTelemetryStore } from '@/store/telemetryStore';
 import { useConceptStore } from '@/store/conceptStore';
 import { getParagraphById } from '@/utils/paragraphUtils';
@@ -40,7 +42,7 @@ export function useChatbot() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-      const res = await fetch('/api/chat', {
+      const res = await fetch(`${API_BASE}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

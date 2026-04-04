@@ -55,8 +55,8 @@ export const SidebarNav: React.FC<{ activePage: 'reader' | 'outline' | 'annotate
           title={adaptationEnabled ? 'Auto-adapt: ON' : 'Auto-adapt: OFF'}
           className="flex flex-col items-start py-2 transition-colors w-full"
           style={{
-            color: adaptationEnabled ? 'var(--accent-blue)' : '#888',
-            background: adaptationEnabled ? 'rgba(24,95,165,0.12)' : 'transparent',
+            color: adaptationEnabled ? 'var(--accent-blue)' : 'var(--text-secondary)',
+            background: adaptationEnabled ? 'var(--accent-blue-bg)' : 'transparent',
             borderRadius: '8px',
             padding: '8px',
             border: 'none',

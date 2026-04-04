@@ -36,12 +36,19 @@ import {
   useTelemetryResume,
   TelemetryOverlay
 } from '@telemetry';
+import { useDocumentPersistence } from '@/hooks/useDocumentPersistence';
+import { endReadingSession } from '@/utils/endReadingSession';
+import { SummaryPanel } from '@/components/Document/SummaryPanel';
+import { useDocumentStore } from '@/store/documentStore';
 
 export const ReadPage: React.FC = () => {
   const paragraphs = useSessionStore(s => s.paragraphs);
   const [showBreak, setShowBreak] = useState(false);
   const burstActive = useUIStore(s => s.burstActive);
   const focusMode = useUIStore(s => s.focusMode);
+  const summaryDrawerOpen = useUIStore((s) => s.summaryDrawerOpen);
+  const setSummaryDrawerOpen = useUIStore((s) => s.setSummaryDrawerOpen);
+  const currentDocument = useDocumentStore((s) => s.currentDocument);
 
   // --- Telemetry hooks ---
   useTelemetryResume();
@@ -56,6 +63,7 @@ export const ReadPage: React.FC = () => {
   useDynamicBrightness();
   usePermissionMode();
   useManualMode();
+  useDocumentPersistence();
 
   // Eye strain schedule
   useEyeStrainSchedule({
@@ -97,9 +105,18 @@ export const ReadPage: React.FC = () => {
         e.preventDefault();
         useUIStore.getState().toggleFocusMode();
       }
+      if (e.key === 'Escape') {
+        useUIStore.getState().setSummaryDrawerOpen(false);
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      void endReadingSession();
+    };
   }, []);
 
   // Adaptation announcer
@@ -256,6 +273,42 @@ export const ReadPage: React.FC = () => {
           overflow: "hidden",
         }}
       />
+
+      {summaryDrawerOpen && (
+        <>
+          <button
+            type="button"
+            className="summary-drawer fixed inset-0 z-[8500] border-none cursor-default"
+            style={{
+              background: 'color-mix(in srgb, var(--text-primary) 50%, transparent)',
+            }}
+            aria-label="Close summary"
+            onClick={() => setSummaryDrawerOpen(false)}
+          />
+          <aside
+            className="summary-drawer fixed right-0 top-0 z-[8600] h-full w-[300px] overflow-y-auto border-l p-4 shadow-xl"
+            style={{
+              background: 'var(--bg-secondary)',
+              borderColor: 'var(--border-color)',
+            }}
+          >
+            <div className="flex justify-between items-center mb-3">
+              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                Summary
+              </span>
+              <button
+                type="button"
+                className="text-lg leading-none bg-transparent border-none cursor-pointer"
+                style={{ color: 'var(--text-secondary)' }}
+                onClick={() => setSummaryDrawerOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <SummaryPanel doc={currentDocument} />
+          </aside>
+        </>
+      )}
     </motion.div>
   );
 };

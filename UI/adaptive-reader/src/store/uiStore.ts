@@ -6,10 +6,12 @@ export interface UIState {
   chromeOpacity: number;
   burstActive: boolean;
   focusMode: boolean;
+  summaryDrawerOpen: boolean;
   setChromeVisible: (v: boolean) => void;
   setChromeOpacity: (v: number) => void;
   triggerBurst: () => void;
   toggleFocusMode: () => void;
+  setSummaryDrawerOpen: (v: boolean) => void;
 }
 
 function readBoolLS(key: string, fallback: boolean): boolean {
@@ -26,6 +28,7 @@ export const useUIStore = create<UIState>((set) => ({
   chromeOpacity: 1,
   burstActive: false,
   focusMode: readBoolLS('focus_mode', false),
+  summaryDrawerOpen: false,
 
   setChromeVisible: (v) => set({ chromeVisible: v }),
   setChromeOpacity: (v) => set({ chromeOpacity: v }),
@@ -41,4 +44,5 @@ export const useUIStore = create<UIState>((set) => ({
       }
       return { focusMode: next };
     }),
+  setSummaryDrawerOpen: (v) => set({ summaryDrawerOpen: v }),
 }));

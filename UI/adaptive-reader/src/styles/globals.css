@@ -130,7 +130,8 @@ body {
 .focus-mode-active .selection-toolbar,
 .focus-mode-active .telemetry-debug-overlay,
 .focus-mode-active .permission-mode-panel,
-.focus-mode-active .manual-hover-box {
+.focus-mode-active .manual-hover-box,
+.focus-mode-active .summary-drawer {
   opacity: 0 !important;
   pointer-events: none !important;
   transition: opacity 500ms ease-out;

@@ -14,4 +14,11 @@ export default defineConfig({
       '@nlp': path.resolve(__dirname, '../../nlp/src'),
     },
   },
+  optimizeDeps: {
+    // Do NOT include pdfjs-dist here — it is huge and pre-bundling it causes OOM.
+    // It is loaded lazily via dynamic import() in pdfParser.ts.
+    exclude: ['pdfjs-dist'],
+  },
 })
+
+

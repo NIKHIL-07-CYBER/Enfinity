@@ -115,4 +115,75 @@ While on the reading page, you can open the **Telemetry Debug Overlay**:
 
 ---
 
+## New in v2.0
+
+### User accounts
+
+- Email sign-in / sign-up via Supabase Auth
+- All reading sessions, highlights, and documents stored per-user
+- Sign in at `/auth` — reading routes (`/read`, `/review`, `/archive`, `/saved`, `/settings`, `/dashboard`) require authentication
+
+### Reading modes
+
+Three distinct modes selectable in the navbar:
+
+| Mode | Behavior |
+|------|----------|
+| Auto | Hard words replaced inline when CFS > 1.5 (existing behavior) |
+| Ask me | Panel appears after 45s on a paragraph offering to reveal difficult words |
+| Manual | Hover over any word to instantly see its definition |
+
+### Document library
+
+- Upload `.txt`, `.md`, or `.pdf` files
+- Documents saved to your account and accessible from any device
+- Resume reading from exactly where you left off
+- Progress bar shows how far through each document you've read
+
+### AI document summaries
+
+- Generate a summary of any saved document
+- Define a start and end paragraph range for focused summarization
+- Bullet-point format — key concepts extracted in seconds
+- Powered by Claude Haiku (or extractive fallback when API key absent)
+
+### Reading analytics dashboard (`/dashboard`)
+
+- Total minutes read per week
+- Average reading speed (WPM) over time
+- Daily reading activity bar chart
+- Most struggled words across all sessions
+- Complete session history with continue-reading links
+
+### Dark / Sepia / Light themes
+
+- Full dark mode with correct contrast throughout every component
+- Sepia mode for warm paper-like reading
+- System preference detected on first visit
+- Persists across sessions
+
+## Environment setup
+
+```bash
+# Required for AI features:
+ANTHROPIC_API_KEY=sk-ant-...    # Claude Haiku for chat + summaries
+
+# Required for user accounts:
+VITE_SUPABASE_URL=https://...
+VITE_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_URL=https://...
+SUPABASE_SERVICE_KEY=eyJ...
+
+# Self-hosted translation (privacy-first):
+docker run -d -p 5000:5000 libretranslate/libretranslate
+```
+
+## Database schema (Supabase)
+
+Run the SQL in `supabase/schema.sql` in your Supabase SQL editor.
+
+Tables: `reading_sessions`, `user_documents`, `user_highlights`, `reading_analytics`
+
+---
+
 *Built with ❤️ for the future of digital literacy.*

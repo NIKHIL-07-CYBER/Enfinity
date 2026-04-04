@@ -1,5 +1,8 @@
 // DONE: Task 3a — Selection store + Task 2a action panel state
 import { create } from 'zustand';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/store/authStore';
+import { useDocumentStore } from '@/store/documentStore';
 
 export interface SelectionEntry {
   id: string;
@@ -134,12 +137,29 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
   setCurrentSelection: (text, rect, paragraphId) =>
     set({ currentSelection: text, selectionRect: rect, currentParagraphId: paragraphId }),
 
-  saveEntry: (entry) =>
+  saveEntry: (entry) => {
     set((state) => {
       const next = [...state.savedEntries, entry];
       saveEntriesToLS(next);
       return { savedEntries: next };
-    }),
+    });
+    const user = useAuthStore.getState().user;
+    if (user && import.meta.env.VITE_SUPABASE_URL) {
+      const docId = useDocumentStore.getState().currentDocument?.id;
+      void supabase.from('user_highlights').insert({
+        user_id: user.id,
+        document_id: docId ?? null,
+        paragraph_id: entry.paragraphId,
+        original_text: entry.text,
+        highlight_color: entry.highlight ?? null,
+        translation: entry.translation ?? null,
+        definition: entry.definition ?? null,
+        pronunciation: entry.pronunciation ?? null,
+        note_content: entry.note ?? null,
+        folder: entry.folder ?? 'Unsorted',
+      });
+    }
+  },
 
   updateEntry: (id, partial) =>
     set((state) => {
