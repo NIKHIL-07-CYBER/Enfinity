@@ -32,3 +32,18 @@ export async function saveAppliedAdaptation(event: AdaptationEvent): Promise<voi
 export async function loadAppliedAdaptations(): Promise<StoredAdaptation[]> {
   return await db.adaptations.toArray();
 }
+
+export async function resetAllData(): Promise<void> {
+  // Clear Dexie db instances successfully
+  await Promise.all([
+    db.session.clear(),
+    db.telemetry.clear(),
+    db.adaptations.clear()
+  ]);
+  
+  // Clear synchronous localStorage payloads securely
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('last_paragraph_id');
+    localStorage.removeItem('last_scroll_y');
+  }
+}

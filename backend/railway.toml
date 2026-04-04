@@ -1,0 +1,11 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm run build"
+
+[deploy]
+startCommand = "npm run start"
+
+[env]
+PORT = "3001"
+FRONTEND_URL = "https://your-vercel-frontend-url.vercel.app"
+LIBRE_TRANSLATE_URL = "http://localhost:5000/translate"
