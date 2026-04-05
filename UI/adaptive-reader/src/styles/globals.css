@@ -34,6 +34,35 @@
   --active-paragraph-bg: transparent;
 }
 
+html.dark,
+[data-theme="dark"],
+.dark-mode {
+  --bg-primary: #0f1117;
+  --bg-secondary: #17191f;
+  --bg-tertiary: #1e2130;
+  --text-primary: #edebe4;
+  --text-secondary: #9b9893;
+  --text-tertiary: #5e5c57;
+  --border-color: rgba(237, 235, 228, 0.11);
+  --border-hover: rgba(237, 235, 228, 0.22);
+  --bg-color: var(--bg-primary);
+  --text-color: var(--text-primary);
+  --sidebar-bg: var(--bg-secondary);
+  --nav-text: var(--text-secondary);
+  --card-border: var(--border-color);
+  --selection-bg: rgba(106, 171, 236, 0.22);
+  --toast-bg: rgba(15, 17, 23, 0.94);
+  --toolbar-surface: color-mix(in srgb, #17191f 90%, #6aabec 10%);
+  --toolbar-on-accent: #ffffff;
+}
+
+html.dark body,
+[data-theme="dark"] body,
+.dark-mode body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -48,6 +77,30 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+html.dark button,
+html.dark input,
+html.dark textarea,
+html.dark select,
+html.dark a,
+[data-theme="dark"] button,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select,
+[data-theme="dark"] a,
+.dark-mode button,
+.dark-mode input,
+.dark-mode textarea,
+.dark-mode select,
+.dark-mode a {
+  color: var(--text-color);
+}
+
+html.dark ::placeholder,
+[data-theme="dark"] ::placeholder,
+.dark-mode ::placeholder {
+  color: var(--text-tertiary);
 }
 
 /* ═══════════════════════════════════════════════════  

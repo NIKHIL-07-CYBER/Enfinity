@@ -19,31 +19,20 @@ const QUICK_ACTIONS = ['Explain this paragraph', 'Define difficult words', 'Summ
 
 const FIVE_MIN_MS = 5 * 60 * 1000;
 
-function computePanelStyle(avatarConfig: AvatarConfig, winW: number, winH: number): React.CSSProperties {
-  const PANEL_WIDTH = 320;
-  const PANEL_MAX_HEIGHT = 460;
-  const GAP = 8;
-  const NAV_HEIGHT = 60;
-
-  const avatarBottomPx = (avatarConfig.positionY / 100) * winH;
-  const panelBottom = avatarBottomPx + avatarConfig.size + GAP;
-  const avatarRightPx = (avatarConfig.positionX / 100) * winW;
-  const panelRight = Math.max(8, winW - avatarRightPx - avatarConfig.size);
-
-  const panelTopFromBottom = panelBottom + PANEL_MAX_HEIGHT;
-  const panelTopFromViewportTop = winH - panelTopFromBottom;
-  const adjustedMaxHeight =
-    panelTopFromViewportTop < NAV_HEIGHT + 8
-      ? PANEL_MAX_HEIGHT - (NAV_HEIGHT + 8 - panelTopFromViewportTop)
-      : PANEL_MAX_HEIGHT;
+function computePanelStyle(winW: number): React.CSSProperties {
+  const PANEL_WIDTH = Math.min(340, winW - 32);
+  const PANEL_MAX_HEIGHT = 520;
+  const gap = 24;
+  const right = 24;
+  const bottom = 80;
 
   return {
     position: 'fixed',
-    bottom: panelBottom,
-    right: panelRight,
+    bottom,
+    right,
     width: PANEL_WIDTH,
-    maxHeight: Math.max(200, adjustedMaxHeight),
-    zIndex: 8000,
+    maxHeight: PANEL_MAX_HEIGHT,
+    zIndex: 9998,
   };
 }
 
@@ -76,8 +65,8 @@ export const ChatbotPanel: React.FC = () => {
   }, [messages, isTyping]);
 
   const panelStyle = useMemo(
-    () => computePanelStyle(avatarConfig, win.w, win.h),
-    [avatarConfig.positionX, avatarConfig.positionY, avatarConfig.size, win.w, win.h],
+    () => computePanelStyle(win.w),
+    [win.w],
   );
 
   if (!isOpen) return null;

@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
 import path from 'path'
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -12,6 +14,14 @@ export default defineConfig({
       '@telemetry': fileURLToPath(new URL('../../telemetry', import.meta.url)),
       '@backend': path.resolve(__dirname, '../../backend/src'),
       '@nlp': path.resolve(__dirname, '../../nlp/src'),
+    },
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
     },
   },
   optimizeDeps: {

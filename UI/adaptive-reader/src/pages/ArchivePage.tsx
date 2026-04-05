@@ -6,30 +6,56 @@ import { ROUTES } from '@/constants/routes';
 import { loadSession } from '@/utils/persistence';
 import { useSessionStore } from '@/store/sessionStore';
 import { syncParagraphsToNlp } from '@/utils/paragraphUtils';
+import { loadArchivedSessions, type ArchivedSession } from '@/utils/sessionArchive';
 
-interface ArchivedSession {
-  id: string;
+interface DisplaySession {
+  id: string | number;
   title: string;
   date: string;
   paragraphCount: number;
   sessionStartTime?: number;
   paragraphs?: any[];
+  durationSeconds?: number;
+  wordsRead?: number;
+  avgReadingSpeed?: string;
 }
 
 export const ArchivePage: React.FC = () => {
   const navigate = useNavigate();
-  const [sessions, setSessions] = useState<ArchivedSession[]>([]);
+  const [sessions, setSessions] = useState<DisplaySession[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadSessions() {
       try {
-        const session = await loadSession().catch(() => null);
-        const loaded: ArchivedSession[] = [];
-        if (session) {
-          const title = localStorage.getItem('last_article_title') ||
-            (session.paragraphs?.[0]?.text?.split('\n')[0]?.slice(0, 60) || 'Untitled');
+        const archives = loadArchivedSessions();
+        const loaded: DisplaySession[] = [];
+        
+        // Load all archived sessions
+        archives.forEach((session: ArchivedSession) => {
           loaded.push({
+            id: session.id,
+            title: session.title || 'Untitled',
+            date: session.date || new Date(session.endTime).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+            paragraphCount: session.paragraphsRead || 0,
+            durationSeconds: session.duration || 0,
+            wordsRead: session.wordsRead || 0,
+            avgReadingSpeed: session.avgReadingSpeed || '0 WPM',
+          });
+        });
+
+        // Also load current session if available
+        const session = await loadSession().catch(() => null);
+        if (session && session.paragraphs && session.paragraphs.length > 0) {
+          const title = localStorage.getItem('last_article_title') ||
+            (session.paragraphs?.[0]?.text?.split('\n')[0]?.slice(0, 60) || 'Reading in progress');
+          loaded.unshift({
             id: session.id || 'current',
             title,
             date: session.sessionStartTime
@@ -42,6 +68,7 @@ export const ArchivePage: React.FC = () => {
             paragraphs: session.paragraphs,
           });
         }
+        
         setSessions(loaded);
       } catch { /* empty */ }
       setLoading(false);
@@ -49,7 +76,7 @@ export const ArchivePage: React.FC = () => {
     loadSessions();
   }, []);
 
-  const handleResume = async (session: ArchivedSession) => {
+  const handleResume = async (session: DisplaySession) => {
     if (session.paragraphs?.length) {
       useSessionStore.getState().setParagraphs(session.paragraphs);
       syncParagraphsToNlp(session.paragraphs);

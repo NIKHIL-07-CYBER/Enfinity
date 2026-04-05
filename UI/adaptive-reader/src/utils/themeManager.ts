@@ -3,6 +3,7 @@ export type Theme = 'light' | 'dark' | 'sepia';
 export function applyTheme(theme: Theme): void {
   const html = document.documentElement;
   html.classList.remove('dark', 'sepia');
+  html.dataset.theme = theme;
   if (theme === 'dark') html.classList.add('dark');
   if (theme === 'sepia') html.classList.add('sepia');
   localStorage.setItem('theme', theme);

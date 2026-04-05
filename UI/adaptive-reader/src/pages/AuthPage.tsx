@@ -10,6 +10,7 @@ export const AuthPage: React.FC = () => {
   const isLoading = useAuthStore((s) => s.isLoading);
   const signInWithEmail = useAuthStore((s) => s.signInWithEmail);
   const signUpWithEmail = useAuthStore((s) => s.signUpWithEmail);
+  const resendConfirmationEmail = useAuthStore((s) => s.resendConfirmationEmail);
 
   const [tab, setTab] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
@@ -43,6 +44,22 @@ export const AuthPage: React.FC = () => {
     }
   };
 
+  const onResendConfirmation = async () => {
+    if (!email) {
+      setError('Please enter your email first');
+      return;
+    }
+    setBusy(true);
+    const { error: err } = await resendConfirmationEmail(email);
+    setBusy(false);
+    if (err) {
+      setError(err);
+      toast.error(err);
+    } else {
+      toast.success('Confirmation email sent');
+    }
+  };
+
   const onSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -65,8 +82,9 @@ export const AuthPage: React.FC = () => {
       setError(err);
       toast.error(err);
     } else {
-      toast.success('Account created');
-      navigate(ROUTES.upload);
+      toast.success('Account created! Please check your email to confirm your account.');
+      setTab('signin');
+      setError('Please confirm your email before signing in.');
     }
   };
 
@@ -154,6 +172,15 @@ export const AuthPage: React.FC = () => {
               onClick={() => navigate(ROUTES.upload)}
             >
               Continue without account
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              className="w-full text-sm text-center underline"
+              style={{ color: 'var(--accent-blue)' }}
+              onClick={onResendConfirmation}
+            >
+              Resend confirmation email
             </button>
           </form>
         ) : (

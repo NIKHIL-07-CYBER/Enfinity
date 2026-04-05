@@ -1,16 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useSessionStore } from '@/store/sessionStore';
 import { saveSession } from '@/utils/persistence';
-
-type ScheduleConfig = Record<string, string>;
-type ScheduleTuple = [number, ScheduleConfig];
-
-const SCHEDULE: ScheduleTuple[] = [
-  [0,  { "--bg-color":"#FDFCF9", "--text-color":"#1a1a18", "--font-weight":"400", "--line-height":"1.75", "--font-size":"18px" }],
-  [20, { "--bg-color":"#FAF8F2", "--font-weight":"400", "--line-height":"1.80" }],
-  [40, { "--bg-color":"#F5F2E8", "--font-size":"19px", "--line-height":"1.85" }],
-  [60, { "--bg-color":"#F0EBD8", "--font-weight":"400", "--line-height":"1.90", "--font-size":"20px" }],
-];
+import { applyEyeStrainSettings, getEyeStrainLevel } from '@/utils/eyeStrain';
 
 interface UseEyeStrainScheduleProps {
   onBreakDue?: () => void;
@@ -45,15 +36,8 @@ export const useEyeStrainSchedule = ({ onBreakDue }: UseEyeStrainScheduleProps =
       const elapsedMs = Date.now() - sessionStartTime;
       const elapsedMinutes = Math.floor(elapsedMs / 60000);
 
-      for (let i = SCHEDULE.length - 1; i >= 0; i--) {
-        const [minuteThreshold, config] = SCHEDULE[i];
-        if (elapsedMinutes >= minuteThreshold) {
-          Object.entries(config).forEach(([key, value]) => {
-            document.documentElement.style.setProperty(key, value);
-          });
-          break;
-        }
-      }
+      const newLevel = getEyeStrainLevel(elapsedMinutes);
+      applyEyeStrainSettings(newLevel);
 
       if (elapsedMinutes > 0 && elapsedMinutes % 20 === 0) {
         if (!firedBreaks.current.has(elapsedMinutes)) {

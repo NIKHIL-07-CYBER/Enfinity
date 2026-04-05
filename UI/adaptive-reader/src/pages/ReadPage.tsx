@@ -29,6 +29,7 @@ import { usePermissionMode } from '@/hooks/usePermissionMode';
 import { useManualMode } from '@/hooks/useManualMode';
 import { PermissionModePanel } from '@/components/Reader/PermissionModePanel';
 import { ManualHoverBox } from '@/components/Reader/ManualHoverBox';
+import { EyeStrainControl } from '@/components/Reader/EyeStrainControl';
 import { 
   useParagraphDwell, 
   useRegressionTracker, 
@@ -250,6 +251,7 @@ export const ReadPage: React.FC = () => {
       {/* Task 3c: Selection toolbar */}
       <SelectionToolbar />
       <ManualHoverBox />
+      <EyeStrainControl />
 
       {/* Task 5: Chatbot */}
       <ChatbotAvatar />

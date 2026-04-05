@@ -7,17 +7,21 @@ import { useConceptStore } from "@/store/conceptStore";
 import { loadSession } from "@/utils/persistence";
 import { getParagraphById, getParagraphs, syncParagraphsToNlp } from "@/utils/paragraphUtils";
 import { useSessionStore } from "@/store/sessionStore";
+import { useReadingModeStore } from "@/store/readingModeStore";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { finalizeAndArchiveSession, getCurrentSession } from "@/utils/sessionArchive";
 
 export const ReviewPage: React.FC = () => {
   const navigate = useNavigate();
   const struggledTerms = useConceptStore(s => s.struggledTerms);
   const struggledParagraphs = useConceptStore(s => s.struggledParagraphs);
+  const readingMode = useReadingModeStore(s => s.mode);
 
   const [sessionDuration, setSessionDuration] = useState<number>(0);
   const [wordsProcessed, setWordsProcessed] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const [sessionStartTime, setSessionStartTime] = useState<string>('');
 
   useEffect(() => {
     async function loadData() {
@@ -32,6 +36,7 @@ export const ReviewPage: React.FC = () => {
           ? 0
           : Math.round(elapsed / 60000);
         setSessionDuration(minutes);
+        setSessionStartTime(new Date(session.sessionStartTime).toISOString());
       }
       const allParagraphs = getParagraphs();
       if (allParagraphs && allParagraphs.length > 0) {
@@ -52,6 +57,31 @@ export const ReviewPage: React.FC = () => {
       return p ? `${p.text.slice(0, 120)}…` : "";
     })
     .filter(Boolean);
+
+  const handleArchiveSession = () => {
+    if (!sessionStartTime) {
+      console.warn('Session start time not available');
+      return;
+    }
+    
+    try {
+      const currentSession = getCurrentSession();
+      const archived = finalizeAndArchiveSession({
+        startTime: sessionStartTime,
+        mode: readingMode,
+        title: currentSession.title,
+        wordsRead: wordsProcessed,
+        paragraphsRead: currentSession.paragraphs,
+      });
+
+      // Show success feedback and navigate to archive
+      alert(`✓ Session archived!\n\nDuration: ${archived.insights.totalTime}\nWords: ${archived.wordsRead}\nSpeed: ${archived.avgReadingSpeed}`);
+      navigate(ROUTES.archive);
+    } catch (error) {
+      console.error('Failed to archive session:', error);
+      alert('Failed to archive session. Please try again.');
+    }
+  };
 
   return (
     <div className="min-h-screen relative overflow-x-hidden" style={{ backgroundColor: 'var(--bg-color)' }}>
@@ -122,7 +152,10 @@ export const ReviewPage: React.FC = () => {
               >
                 BACK TO READING
               </button>
-              <button className="w-full max-w-[320px] py-4 rounded-lg font-bold text-[13px] tracking-widest uppercase text-white transition-opacity hover:opacity-90 shadow-lg" style={{ backgroundColor: 'var(--toast-bg)' }}>
+              <button 
+                onClick={handleArchiveSession}
+                className="w-full max-w-[320px] py-4 rounded-lg font-bold text-[13px] tracking-widest uppercase text-white transition-opacity hover:opacity-90 shadow-lg" style={{ backgroundColor: 'var(--toast-bg)' }}
+              >
                 ARCHIVE SESSION INSIGHTS
               </button>
             </div>
