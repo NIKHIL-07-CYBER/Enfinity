@@ -1,4 +1,4 @@
-// DONE: Task 2a — Active paragraph detection using rAF + viewport top-anchor
+// DONE: Task 2a — Active paragraph detection using rAF, nearest-to-scanline strategy
 import { useEffect, useRef } from 'react';
 import { useTelemetryStore } from '@/store/telemetryStore';
 
@@ -9,8 +9,13 @@ export interface ParagraphMeta {
   daleChallScore: number;
 }
 
-// Height of the fixed top nav bar in px
+// Fixed nav bar height in px
 const NAV_H = 64;
+
+// Fraction of the READING area (below nav) where the scan line sits.
+// 0.35 = upper-third of reading area → first visible element activates quickly,
+// but the line is far enough down that the heading/title can be detected.
+const SCAN_FRAC = 0.35;
 
 export function useActiveParagraph(paragraphs: ParagraphMeta[]): void {
   const rafRef = useRef(0);
@@ -23,46 +28,49 @@ export function useActiveParagraph(paragraphs: ParagraphMeta[]): void {
     const loop = () => {
       const scrollY = window.scrollY;
       const innerH = window.innerHeight;
+      const readingH = innerH - NAV_H;
 
-      // Detection line = just below the nav bar + 10% of reading area
-      // This ensures paragraph 1 is active when at top of page
-      const detectionY = scrollY + NAV_H + (innerH - NAV_H) * 0.12;
+      // Scan line — 35% down the reading area below the nav bar
+      const scanLine = scrollY + NAV_H + readingH * SCAN_FRAC;
 
+      // Query ALL trackable elements (paragraphs + heading if wrapped)
       const elements = document.querySelectorAll('[data-paragraph-id]');
+      if (elements.length === 0) {
+        rafRef.current = requestAnimationFrame(loop);
+        return;
+      }
+
       let foundId: string | null = null;
+      let minDist = Infinity;
 
       for (let i = 0; i < elements.length; i++) {
         const el = elements[i] as HTMLElement;
         const rect = el.getBoundingClientRect();
 
-        // Absolute positions in document
-        const absTop = rect.top + scrollY;
+        const absTop    = rect.top    + scrollY;
         const absBottom = rect.bottom + scrollY;
+        const absCenter = (absTop + absBottom) / 2;
 
-        if (absTop <= detectionY && detectionY <= absBottom) {
+        // Skip elements fully off-screen
+        if (rect.bottom < -400 || rect.top > innerH + 400) continue;
+
+        if (absTop <= scanLine && scanLine <= absBottom) {
+          // Scan line is INSIDE this element — exact match
           foundId = el.getAttribute('data-paragraph-id');
           break;
         }
-      }
 
-      // Fallback: if no paragraph straddles the detection line,
-      // pick the last paragraph whose top is above the detection line
-      if (!foundId && elements.length > 0) {
-        for (let i = elements.length - 1; i >= 0; i--) {
-          const el = elements[i] as HTMLElement;
-          const rect = el.getBoundingClientRect();
-          const absTop = rect.top + scrollY;
-          if (absTop <= detectionY) {
-            foundId = el.getAttribute('data-paragraph-id');
-            break;
-          }
+        // Otherwise record how far the element's center is from the scan line
+        const dist = Math.abs(absCenter - scanLine);
+        if (dist < minDist) {
+          minDist = dist;
+          foundId = el.getAttribute('data-paragraph-id');
         }
       }
 
       if (foundId && foundId !== lastIdRef.current) {
         lastIdRef.current = foundId;
 
-        // Short debounce (60ms) to avoid flickering on fast scroll
         if (debounceRef.current) clearTimeout(debounceRef.current);
         const id = foundId;
         debounceRef.current = window.setTimeout(() => {
@@ -71,7 +79,7 @@ export function useActiveParagraph(paragraphs: ParagraphMeta[]): void {
             useTelemetryStore.getState().setActiveParagraph(id);
           }
           debounceRef.current = null;
-        }, 60);
+        }, 80);
       }
 
       rafRef.current = requestAnimationFrame(loop);

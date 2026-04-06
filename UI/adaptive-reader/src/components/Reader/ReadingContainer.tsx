@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { ParagraphBlock } from './ParagraphBlock';
 import { useSessionStore } from '@/store/sessionStore';
+import { useTelemetryStore } from '@/store/telemetryStore';
 import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
 
@@ -53,13 +54,32 @@ export const ReadingContainer: React.FC = () => {
   const readMins = Math.ceil(totalWords / 200);
   const title = paragraphs[0]?.text.split('\n')[0] || "Untitled";
 
+  const activeParagraphId = useTelemetryStore(s => s.activeParagraphId);
+  const headingId = 'doc-heading-0';
+  const isHeadingActive = activeParagraphId === headingId;
+
   return (
     <div className="w-full max-w-[680px] mx-auto px-6 sm:px-12 reading-container" style={{ transition: 'filter 3s ease-in-out' }}>
-      <div className="mb-12 mt-12">
+      {/* Heading block — tracked as first element */}
+      <div
+        data-paragraph-id={headingId}
+        style={{
+          transition: 'opacity 250ms ease-out, background-color 250ms ease-out',
+          opacity: isHeadingActive ? 1 : 0.65,
+          backgroundColor: isHeadingActive ? 'var(--accent-blue-bg)' : 'transparent',
+          borderLeft: isHeadingActive ? '3px solid var(--accent-border-subtle)' : '3px solid transparent',
+          paddingLeft: '12px',
+          marginBottom: '48px',
+          marginTop: '48px',
+          paddingTop: '8px',
+          paddingBottom: '8px',
+          borderRadius: '4px',
+        }}
+      >
         <div style={{ color: 'var(--nav-text)' }} className="text-xs uppercase tracking-widest font-bold mb-4">
           CHAPTER 01 • {readMins} MIN READ • WORD COUNT: {totalWords.toLocaleString()}
         </div>
-        <h1 style={{ fontWeight: 700, color: 'var(--text-color)' }} className="text-4xl leading-tight mb-16">
+        <h1 style={{ fontWeight: 700, color: 'var(--text-color)', margin: 0 }} className="text-4xl leading-tight">
           {title}
         </h1>
       </div>
