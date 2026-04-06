@@ -1,4 +1,4 @@
-// DONE: Task 2a — Active paragraph detection using rAF + viewport center
+// DONE: Task 2a — Active paragraph detection using rAF + viewport top-anchor
 import { useEffect, useRef } from 'react';
 import { useTelemetryStore } from '@/store/telemetryStore';
 
@@ -9,61 +9,69 @@ export interface ParagraphMeta {
   daleChallScore: number;
 }
 
+// Height of the fixed top nav bar in px
+const NAV_H = 64;
+
 export function useActiveParagraph(paragraphs: ParagraphMeta[]): void {
-  const pendingIdRef = useRef<string | null>(null);
-  const stableTimerRef = useRef<number | null>(null);
-  const cachedCountRef = useRef(0);
   const rafRef = useRef(0);
+  const lastIdRef = useRef<string | null>(null);
+  const debounceRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!paragraphs || paragraphs.length === 0) return;
 
     const loop = () => {
       const scrollY = window.scrollY;
-      const innerHeight = window.innerHeight;
-      const viewportCenter = scrollY + innerHeight * 0.45;
+      const innerH = window.innerHeight;
+
+      // Detection line = just below the nav bar + 10% of reading area
+      // This ensures paragraph 1 is active when at top of page
+      const detectionY = scrollY + NAV_H + (innerH - NAV_H) * 0.12;
 
       const elements = document.querySelectorAll('[data-paragraph-id]');
-
-      // Refresh cache count lazily
-      if (elements.length !== cachedCountRef.current) {
-        cachedCountRef.current = elements.length;
-      }
-
       let foundId: string | null = null;
 
       for (let i = 0; i < elements.length; i++) {
         const el = elements[i] as HTMLElement;
         const rect = el.getBoundingClientRect();
 
-        // Skip off-screen elements
-        if (rect.bottom < -200 || rect.top > innerHeight + 200) continue;
-
+        // Absolute positions in document
         const absTop = rect.top + scrollY;
         const absBottom = rect.bottom + scrollY;
 
-        if (absTop <= viewportCenter && viewportCenter <= absBottom) {
+        if (absTop <= detectionY && detectionY <= absBottom) {
           foundId = el.getAttribute('data-paragraph-id');
           break;
         }
       }
 
-      if (foundId && foundId !== pendingIdRef.current) {
-        pendingIdRef.current = foundId;
-
-        // Debounce: only update after 150ms of stability
-        if (stableTimerRef.current) {
-          clearTimeout(stableTimerRef.current);
-        }
-
-        const idToSet = foundId;
-        stableTimerRef.current = window.setTimeout(() => {
-          const current = useTelemetryStore.getState().activeParagraphId;
-          if (current !== idToSet) {
-            useTelemetryStore.getState().setActiveParagraph(idToSet);
+      // Fallback: if no paragraph straddles the detection line,
+      // pick the last paragraph whose top is above the detection line
+      if (!foundId && elements.length > 0) {
+        for (let i = elements.length - 1; i >= 0; i--) {
+          const el = elements[i] as HTMLElement;
+          const rect = el.getBoundingClientRect();
+          const absTop = rect.top + scrollY;
+          if (absTop <= detectionY) {
+            foundId = el.getAttribute('data-paragraph-id');
+            break;
           }
-          stableTimerRef.current = null;
-        }, 150);
+        }
+      }
+
+      if (foundId && foundId !== lastIdRef.current) {
+        lastIdRef.current = foundId;
+
+        // Short debounce (60ms) to avoid flickering on fast scroll
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        const id = foundId;
+        debounceRef.current = window.setTimeout(() => {
+          const current = useTelemetryStore.getState().activeParagraphId;
+          if (current !== id) {
+            useTelemetryStore.getState().setActiveParagraph(id);
+          }
+          debounceRef.current = null;
+        }, 60);
       }
 
       rafRef.current = requestAnimationFrame(loop);
@@ -73,9 +81,7 @@ export function useActiveParagraph(paragraphs: ParagraphMeta[]): void {
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      if (stableTimerRef.current) {
-        clearTimeout(stableTimerRef.current);
-      }
+      if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [paragraphs]);
 }
