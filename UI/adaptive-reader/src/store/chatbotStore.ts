@@ -37,6 +37,7 @@ export interface ChatbotState {
   updateAvatarConfig: (config: Partial<AvatarConfig>) => void;
   setContextParagraph: (id: string | null) => void;
   setHasUnread: (v: boolean) => void;
+  clearMessages: () => void;
 }
 
 function loadMessages(): ChatMessage[] {
@@ -96,4 +97,9 @@ export const useChatbotStore = create<ChatbotState>((set) => ({
   setContextParagraph: (id) => set({ contextParagraphId: id }),
 
   setHasUnread: (v) => set({ hasUnread: v }),
+
+  clearMessages: () => {
+    localStorage.removeItem('chatbot_messages');
+    set({ messages: [], hasUnread: false });
+  },
 }));

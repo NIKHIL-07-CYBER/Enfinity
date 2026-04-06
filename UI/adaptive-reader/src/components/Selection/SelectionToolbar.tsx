@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { useSelectionStore } from '@/store/selectionStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { getPhonetic, speakText } from '@/utils/pronunciationUtils';
+import toast from 'react-hot-toast';
 
 const HIGHLIGHT_SWATCHES = [
   'var(--highlight-swatch-1)',
@@ -17,7 +18,7 @@ const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:3001';
 
 function computeToolbarPosition(rect: DOMRect): { top: number; left: number } {
   const TOOLBAR_HEIGHT = 52;
-  const TOOLBAR_WIDTH = 280;
+  const TOOLBAR_WIDTH = 320;
   const MARGIN = 8;
   const NAV_HEIGHT = 60;
 
@@ -73,7 +74,6 @@ export const SelectionToolbar: React.FC = () => {
   const isVisible = useSelectionStore((s) => s.isToolbarVisible);
   const selectionRect = useSelectionStore((s) => s.selectionRect);
   const currentSelection = useSelectionStore((s) => s.currentSelection);
-  const currentParagraphId = useSelectionStore((s) => s.currentParagraphId);
   const folders = useSelectionStore((s) => s.folders);
   const currentTranslation = useSelectionStore((s) => s.currentTranslation);
   const currentDefinition = useSelectionStore((s) => s.currentDefinition);
@@ -86,7 +86,19 @@ export const SelectionToolbar: React.FC = () => {
 
   const [showColors, setShowColors] = useState(false);
   const [showFolders, setShowFolders] = useState(false);
+  const [showNote, setShowNote] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+
+  // Determine if any results panel should be shown
+  const hasResults = !!(
+    isFetchingPhonetic ||
+    currentPhonetic ||
+    isFetchingTranslation ||
+    currentTranslation ||
+    isFetchingDefinition ||
+    currentDefinition ||
+    showNote
+  );
 
   if (!isVisible || !selectionRect) return null;
 
@@ -170,16 +182,22 @@ export const SelectionToolbar: React.FC = () => {
 
   const handleSave = (folder: string) => {
     const s = useSelectionStore.getState();
-    s.saveEntry(
-      s.buildEntry({
-        translation: s.currentTranslation ?? undefined,
-        definition: s.currentDefinition ?? undefined,
-        pronunciation: s.currentPhonetic ?? undefined,
-        note: s.noteContent?.trim() || undefined,
-        folder,
-      }),
-    );
+    const entry = s.buildEntry({
+      translation: s.currentTranslation ?? undefined,
+      definition: s.currentDefinition ?? undefined,
+      pronunciation: s.currentPhonetic ?? undefined,
+      note: s.noteContent?.trim() || undefined,
+      folder,
+    });
+    s.saveEntry(entry);
+
+    // Show success feedback
+    toast.success(`Saved to "${folder}"`, { duration: 2000 });
+
+    // Clear note and close everything
+    patchActionPanel({ noteContent: '' });
     setShowFolders(false);
+    setShowNote(false);
     s.setToolbarVisible(false);
   };
 
@@ -190,6 +208,10 @@ export const SelectionToolbar: React.FC = () => {
       setNewFolderName('');
     }
   };
+
+  // Offset for secondary panels
+  const secondaryTop = 48;
+  const tertiaryTop = showColors || showFolders ? 88 : 48;
 
   const toolbarInner = (
     <div
@@ -203,13 +225,14 @@ export const SelectionToolbar: React.FC = () => {
       }}
       onMouseDown={(e) => e.stopPropagation()}
     >
+      {/* Main toolbar row */}
       <div
         style={{
           background: 'var(--toolbar-surface)',
           borderRadius: '10px',
           padding: '6px 10px',
           display: 'flex',
-          gap: '6px',
+          gap: '4px',
           alignItems: 'center',
           boxShadow: '0 4px 16px color-mix(in srgb, var(--text-primary) 12%, transparent)',
           border: '1px solid var(--border-color)',
@@ -218,7 +241,7 @@ export const SelectionToolbar: React.FC = () => {
         <button onClick={handleTranslate} title="Translate" style={btnStyle}>
           🌐
         </button>
-        <button onClick={() => setShowColors(!showColors)} title="Highlight" style={btnStyle}>
+        <button onClick={() => { setShowColors(!showColors); setShowFolders(false); }} title="Highlight" style={btnStyle}>
           🔆
         </button>
         <button onClick={handlePronounce} title="Pronounce" style={btnStyle}>
@@ -227,16 +250,32 @@ export const SelectionToolbar: React.FC = () => {
         <button onClick={handleDefine} title="Define" style={btnStyle}>
           📖
         </button>
-        <button onClick={() => setShowFolders(!showFolders)} title="Save" style={btnStyle}>
+        <button
+          onClick={() => { setShowNote(!showNote); setShowColors(false); setShowFolders(false); }}
+          title="Add Note"
+          style={{
+            ...btnStyle,
+            background: showNote ? 'var(--accent-blue-bg)' : 'none',
+            color: showNote ? 'var(--accent-blue)' : 'var(--text-primary)',
+          }}
+        >
+          📝
+        </button>
+        <button
+          onClick={() => { setShowFolders(!showFolders); setShowColors(false); setShowNote(false); }}
+          title="Save to Library"
+          style={btnStyle}
+        >
           🔖
         </button>
       </div>
 
+      {/* Highlight color picker */}
       {showColors && (
         <div
           style={{
             position: 'absolute',
-            top: '48px',
+            top: `${secondaryTop}px`,
             left: '50%',
             transform: 'translateX(-50%)',
             background: 'var(--toolbar-surface)',
@@ -245,6 +284,7 @@ export const SelectionToolbar: React.FC = () => {
             display: 'flex',
             gap: '4px',
             border: '1px solid var(--border-color)',
+            zIndex: 1,
           }}
         >
           {HIGHLIGHT_SWATCHES.map((color, i) => (
@@ -265,20 +305,26 @@ export const SelectionToolbar: React.FC = () => {
         </div>
       )}
 
+      {/* Save to folder picker */}
       {showFolders && (
         <div
           style={{
             position: 'absolute',
-            top: '48px',
+            top: `${secondaryTop}px`,
             left: '50%',
             transform: 'translateX(-50%)',
             background: 'var(--toolbar-surface)',
             borderRadius: '8px',
             padding: '8px',
-            minWidth: '140px',
+            minWidth: '160px',
             border: '1px solid var(--border-color)',
+            boxShadow: '0 4px 12px color-mix(in srgb, var(--text-primary) 10%, transparent)',
+            zIndex: 10,
           }}
         >
+          <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', paddingLeft: '4px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            Save to folder
+          </div>
           {folders.map((f) => (
             <button
               key={f}
@@ -287,34 +333,36 @@ export const SelectionToolbar: React.FC = () => {
               style={{
                 display: 'block',
                 width: '100%',
-                padding: '4px 8px',
+                padding: '6px 8px',
                 background: 'none',
                 border: 'none',
                 color: 'var(--text-primary)',
-                fontSize: '12px',
+                fontSize: '13px',
                 textAlign: 'left',
                 cursor: 'pointer',
                 borderRadius: '4px',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'var(--accent-blue-bg)';
+                e.currentTarget.style.color = 'var(--accent-blue)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = 'none';
+                e.currentTarget.style.color = 'var(--text-primary)';
               }}
             >
-              {f}
+              📁 {f}
             </button>
           ))}
           <div
             style={{
               borderTop: '1px solid var(--border-color)',
-              margin: '4px 0',
-              paddingTop: '4px',
+              margin: '6px 0 4px',
+              paddingTop: '6px',
             }}
           >
             <input
-              placeholder="New folder..."
+              placeholder="New folder…"
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               onKeyDown={(e) => {
@@ -322,69 +370,101 @@ export const SelectionToolbar: React.FC = () => {
               }}
               style={{
                 width: '100%',
-                padding: '4px 8px',
+                padding: '5px 8px',
                 background: 'var(--bg-tertiary)',
                 border: '1px solid var(--border-color)',
                 borderRadius: '4px',
                 color: 'var(--text-primary)',
-                fontSize: '11px',
+                fontSize: '12px',
                 outline: 'none',
+                boxSizing: 'border-box',
               }}
             />
           </div>
         </div>
       )}
 
-      <div
-        key={currentSelection}
-        className="toolbar-results"
-        style={{
-          position: 'absolute',
-          top: showColors || showFolders ? '88px' : '48px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'var(--bg-secondary)',
-          borderRadius: '8px',
-          padding: '8px 12px',
-          color: 'var(--text-primary)',
-          fontSize: '12px',
-          maxWidth: '280px',
-          lineHeight: 1.4,
-          border: '1px solid var(--border-color)',
-        }}
-      >
-        {isFetchingPhonetic && <div style={{ opacity: 0.7 }}>Loading pronunciation…</div>}
-        {currentPhonetic && !isFetchingPhonetic && (
-          <div style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>🔊 {currentPhonetic}</div>
-        )}
-        {isFetchingTranslation && <div style={{ opacity: 0.7 }}>Translating…</div>}
-        {currentTranslation && !isFetchingTranslation && (
-          <div style={{ marginBottom: '4px' }}>🌐 {currentTranslation}</div>
-        )}
-        {isFetchingDefinition && <div style={{ opacity: 0.7 }}>Looking up…</div>}
-        {currentDefinition && !isFetchingDefinition && (
-          <div style={{ color: 'var(--text-secondary)' }}>📖 {currentDefinition}</div>
-        )}
-        <label style={{ display: 'block', marginTop: '8px', fontSize: '11px', color: 'var(--text-secondary)' }}>
-          Note
+      {/* Note textarea — only shown when user clicks the note button */}
+      {showNote && (
+        <div
+          style={{
+            position: 'absolute',
+            top: `${secondaryTop}px`,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'var(--bg-secondary)',
+            borderRadius: '8px',
+            padding: '10px',
+            width: '260px',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 4px 12px color-mix(in srgb, var(--text-primary) 8%, transparent)',
+            zIndex: 1,
+          }}
+        >
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            📝 Your Note
+          </label>
           <textarea
             value={noteContent}
             onChange={(e) => patchActionPanel({ noteContent: e.target.value })}
-            rows={2}
+            rows={3}
+            placeholder="Add a note about this selection…"
+            autoFocus
             style={{
               width: '100%',
-              marginTop: '4px',
               resize: 'vertical',
               background: 'var(--bg-tertiary)',
               color: 'var(--text-primary)',
               border: '1px solid var(--border-color)',
               borderRadius: '6px',
-              padding: '6px',
-              fontSize: '11px',
+              padding: '6px 8px',
+              fontSize: '12px',
+              outline: 'none',
+              boxSizing: 'border-box',
             }}
           />
-        </label>
-      </div>
+          <div style={{ fontSize: '10px', color: 'var(--text-tertiary)', marginTop: '4px' }}>
+            Click 🔖 to save note to your library
+          </div>
+        </div>
+      )}
+
+      {/* Results panel — only when there's something to show */}
+      {hasResults && !showNote && (
+        <div
+          key={currentSelection}
+          className="toolbar-results"
+          style={{
+            position: 'absolute',
+            top: `${tertiaryTop}px`,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'var(--bg-secondary)',
+            borderRadius: '8px',
+            padding: '8px 12px',
+            color: 'var(--text-primary)',
+            fontSize: '12px',
+            minWidth: '200px',
+            maxWidth: '300px',
+            lineHeight: 1.4,
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 4px 12px color-mix(in srgb, var(--text-primary) 8%, transparent)',
+          }}
+        >
+          {isFetchingPhonetic && <div style={{ opacity: 0.7 }}>Loading pronunciation…</div>}
+          {currentPhonetic && !isFetchingPhonetic && (
+            <div style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>🔊 {currentPhonetic}</div>
+          )}
+          {isFetchingTranslation && <div style={{ opacity: 0.7 }}>Translating…</div>}
+          {currentTranslation && !isFetchingTranslation && (
+            <div style={{ marginBottom: '4px' }}>🌐 {currentTranslation}</div>
+          )}
+          {isFetchingDefinition && <div style={{ opacity: 0.7 }}>Looking up…</div>}
+          {currentDefinition && !isFetchingDefinition && (
+            <div style={{ color: 'var(--text-secondary)' }}>📖 {currentDefinition}</div>
+          )}
+        </div>
+      )}
     </div>
   );
 
@@ -392,8 +472,8 @@ export const SelectionToolbar: React.FC = () => {
 };
 
 const btnStyle: React.CSSProperties = {
-  width: '28px',
-  height: '28px',
+  width: '30px',
+  height: '30px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

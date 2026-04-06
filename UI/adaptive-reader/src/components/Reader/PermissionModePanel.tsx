@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useReadingModeStore } from '@/store/readingModeStore';
 import { getParagraphById } from '@nlp/utils/paragraphUtils';
 import { getDifficultWords, isAcronym, expandAcronym } from '@nlp/utils/nlpUtils';
@@ -28,14 +29,7 @@ export const PermissionModePanel: React.FC = () => {
   const toggleExpanded = useReadingModeStore((s) => s.togglePermissionExpanded);
   const setWords = useReadingModeStore((s) => s.setPermissionPanelWords);
   const setLoading = useReadingModeStore((s) => s.setPermissionPanelLoading);
-
-  const [layout, setLayout] = useState<{
-    top: number;
-    left: number;
-    width: number;
-    maxHeight: number;
-    placement: 'right' | 'bottom';
-  } | null>(null);
+  const setPermissionPanel = useReadingModeStore((s) => s.setPermissionPanel);
 
   useEffect(() => {
     if (!visible || !paragraphId || mode !== 'permission') return;
@@ -69,81 +63,60 @@ export const PermissionModePanel: React.FC = () => {
     void run();
   }, [visible, paragraphId, mode, setWords, setLoading]);
 
-  const recomputeLayout = useCallback(() => {
-    if (!paragraphId || !visible) return;
-    const el = document.querySelector(`[data-paragraph-id="${paragraphId}"]`);
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const panelW = 220;
-    const gap = 12;
-    const vw = window.innerWidth;
-    const rightEdge = r.right + gap + panelW;
-    if (rightEdge <= vw - 8) {
-      setLayout({
-        top: r.top + window.scrollY,
-        left: r.right + gap + window.scrollX,
-        width: panelW,
-        maxHeight: Math.max(120, r.height),
-        placement: 'right',
-      });
-    } else {
-      const readCol = document.querySelector('.reading-container');
-      const rc = readCol?.getBoundingClientRect();
-      const left = rc ? rc.left + window.scrollX : 16;
-      const width = rc ? rc.width : Math.min(680, vw - 32);
-      setLayout({
-        top: r.bottom + window.scrollY + gap,
-        left,
-        width,
-        maxHeight: 320,
-        placement: 'bottom',
-      });
-    }
-  }, [paragraphId, visible]);
-
-  useEffect(() => {
-    if (!visible || !paragraphId) {
-      setLayout(null);
-      return;
-    }
-    recomputeLayout();
-    const onScroll = () => recomputeLayout();
-    window.addEventListener('scroll', onScroll, true);
-    window.addEventListener('resize', onScroll);
-    return () => {
-      window.removeEventListener('scroll', onScroll, true);
-      window.removeEventListener('resize', onScroll);
-    };
-  }, [visible, paragraphId, recomputeLayout]);
-
-  if (!visible || mode !== 'permission' || !paragraphId || !layout) return null;
+  if (!visible || mode !== 'permission' || !paragraphId) return null;
 
   const para = getParagraphById(paragraphId);
   const hardCount =
     words.length > 0 ? words.length : para ? mergeHardWords(para.text).length : 0;
 
-  return (
+  // Use a fixed bottom-right panel that never overlaps text
+  const panel = (
     <div
       className="permission-mode-panel"
       style={{
-        position: 'absolute',
-        top: layout.top,
-        left: layout.left,
-        width: layout.width,
-        maxHeight: layout.maxHeight,
-        overflow: 'auto',
+        position: 'fixed',
+        bottom: '100px',
+        right: '24px',
+        width: '280px',
+        maxHeight: '440px',
+        overflowY: 'auto',
         zIndex: 750,
-        background: 'var(--accent-blue-bg)',
-        border: '1px solid color-mix(in srgb, var(--accent-blue) 25%, var(--border-color))',
-        borderRadius: '10px',
-        padding: '12px',
+        background: 'var(--bg-secondary)',
+        border: '1px solid color-mix(in srgb, var(--accent-blue) 35%, var(--border-color))',
+        borderRadius: '12px',
+        padding: '14px',
         boxSizing: 'border-box',
+        boxShadow: '0 8px 24px color-mix(in srgb, var(--text-primary) 12%, transparent)',
+        animation: 'panel-appear 200ms ease-out',
       }}
     >
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent-blue)' }}>
+          📖 Ask Me Mode
+        </div>
+        <button
+          type="button"
+          onClick={() => setPermissionPanel(null, false)}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: 'var(--text-secondary)',
+            fontSize: '14px',
+            padding: '2px 6px',
+            borderRadius: '4px',
+          }}
+          aria-label="Close"
+        >
+          ✕
+        </button>
+      </div>
+
       {!expanded ? (
         <>
-          <div style={{ fontSize: '13px', color: 'var(--text-primary)', marginBottom: '10px', lineHeight: 1.45 }}>
-            This paragraph has {hardCount || 'several'} hard word{hardCount === 1 ? '' : 's'}. Want to see them?
+          <div style={{ fontSize: '13px', color: 'var(--text-primary)', marginBottom: '10px', lineHeight: 1.5 }}>
+            This paragraph has <strong>{hardCount || 'several'}</strong> hard word{hardCount === 1 ? '' : 's'}. Want to see them?
           </div>
           <button
             type="button"
@@ -152,9 +125,9 @@ export const PermissionModePanel: React.FC = () => {
               width: '100%',
               padding: '8px',
               borderRadius: '8px',
-              border: '1px solid var(--border-color)',
-              background: 'var(--bg-secondary)',
-              color: 'var(--accent-blue)',
+              border: '1px solid var(--accent-blue)',
+              background: 'var(--accent-blue)',
+              color: '#ffffff',
               cursor: 'pointer',
               fontSize: '13px',
               fontWeight: 500,
@@ -214,7 +187,7 @@ export const PermissionModePanel: React.FC = () => {
               padding: '8px',
               borderRadius: '8px',
               border: '1px solid var(--border-color)',
-              background: 'var(--bg-secondary)',
+              background: 'var(--bg-tertiary)',
               color: 'var(--text-primary)',
               cursor: 'pointer',
               fontSize: '12px',
@@ -226,4 +199,6 @@ export const PermissionModePanel: React.FC = () => {
       )}
     </div>
   );
+
+  return createPortal(panel, document.body);
 };

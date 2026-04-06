@@ -1,4 +1,4 @@
-// DONE: Task 5b — Chatbot hook
+// DONE: Task 5b — Chatbot hook (fixed with fallback and better error handling)
 import { useChatbotStore } from '@/store/chatbotStore';
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:3001';
@@ -55,7 +55,15 @@ export function useChatbot() {
 
       clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error('Chat API error');
+      if (!res.ok) {
+        // Try to get error details for better messaging
+        let errMsg = `Server error (${res.status})`;
+        try {
+          const errData = await res.json();
+          if (errData?.error) errMsg = errData.error;
+        } catch { /* ignore */ }
+        throw new Error(errMsg);
+      }
 
       const data = await res.json();
       const response = data.response || data.data?.response || "I couldn't process that. Try again.";
@@ -67,9 +75,15 @@ export function useChatbot() {
         timestamp: Date.now(),
       });
     } catch (err: any) {
-      const errMsg = err?.name === 'AbortError'
-        ? "Response timed out. Try a shorter question."
-        : "I'm having trouble connecting. Try again.";
+      let errMsg: string;
+
+      if (err?.name === 'AbortError') {
+        errMsg = "Response timed out. Try a shorter question.";
+      } else if (err?.message?.includes('fetch') || err?.message?.includes('Failed to fetch') || err?.message?.includes('NetworkError')) {
+        errMsg = "⚠️ Can't reach the server. Make sure the backend is running on port 3001.";
+      } else {
+        errMsg = "I'm having trouble connecting. Try again.";
+      }
 
       useChatbotStore.getState().addMessage({
         id: crypto.randomUUID(),

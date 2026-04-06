@@ -43,6 +43,7 @@ export const ChatbotPanel: React.FC = () => {
   const avatarConfig = useChatbotStore((s) => s.avatarConfig);
   const updateAvatarConfig = useChatbotStore((s) => s.updateAvatarConfig);
   const toggleOpen = useChatbotStore((s) => s.toggleOpen);
+  const clearMessages = useChatbotStore((s) => s.clearMessages);
   const contextParagraphId = useChatbotStore((s) => s.contextParagraphId);
 
   const [input, setInput] = useState('');
@@ -134,6 +135,24 @@ export const ChatbotPanel: React.FC = () => {
         <span style={{ fontWeight: 500, fontSize: '13px', flex: 1, color: 'var(--text-primary)' }}>
           Reading Assistant
         </span>
+        {messages.length > 0 && (
+          <button
+            type="button"
+            onClick={() => { if (window.confirm('Clear conversation history?')) clearMessages(); }}
+            aria-label="Clear conversation"
+            title="Clear conversation"
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '6px',
+              color: 'var(--text-secondary)',
+              fontSize: '11px',
+            }}
+          >
+            🗑
+          </button>
+        )}
         <button
           type="button"
           onClick={() => setShowCustomize(!showCustomize)}
