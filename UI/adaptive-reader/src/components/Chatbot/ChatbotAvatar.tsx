@@ -17,8 +17,8 @@ export const ChatbotAvatar: React.FC = () => {
       onClick={handleClick}
       style={{
         position: 'fixed',
-        right: '24px',
-        bottom: '24px',
+        left: '24px',
+        top: '72px',
         width: `${avatarConfig.size}px`,
         height: `${avatarConfig.size}px`,
         borderRadius: '50%',

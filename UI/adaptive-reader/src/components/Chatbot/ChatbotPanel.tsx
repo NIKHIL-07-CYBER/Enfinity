@@ -22,14 +22,14 @@ const FIVE_MIN_MS = 5 * 60 * 1000;
 function computePanelStyle(winW: number): React.CSSProperties {
   const PANEL_WIDTH = Math.min(340, winW - 32);
   const PANEL_MAX_HEIGHT = 520;
-  const gap = 24;
-  const right = 24;
-  const bottom = 80;
+  const left = 24;
+  // Avatar is at top: 72px, height ~56px → panel opens just below it
+  const top = 72 + 56 + 8;
 
   return {
     position: 'fixed',
-    bottom,
-    right,
+    top,
+    left,
     width: PANEL_WIDTH,
     maxHeight: PANEL_MAX_HEIGHT,
     zIndex: 9998,

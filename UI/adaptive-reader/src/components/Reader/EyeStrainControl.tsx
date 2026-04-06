@@ -19,8 +19,8 @@ export const EyeStrainControl: React.FC = () => {
       className="eye-strain-control"
       style={{
         position: 'fixed',
-        left: '24px',
-        bottom: '24px',
+        right: '24px',
+        top: '72px',
         width: '280px',
         background: 'var(--bg-secondary)',
         border: '1px solid var(--border-color)',

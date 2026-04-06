@@ -12,8 +12,8 @@ export const FocusModeButton: React.FC = () => {
       onClick={toggleFocusMode}
       style={{
         position: 'fixed',
-        bottom: '20px',
-        right: '20px',
+        bottom: '24px',
+        right: '24px',
         zIndex: 9000,
         width: '80px',
         height: '32px',
