@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import type { Paragraph } from '@/types';
-import { supabase } from '@/lib/supabase';
-import { parseRawTextToParagraphs, parseFile, syncParagraphsToNlp } from '@/utils/paragraphUtils';
-import { useSessionStore } from '@/store/sessionStore';
+import type { Paragraph } from '../types';
+import { supabase } from '../lib/supabase';
+import { parseRawTextToParagraphs, parseFile, syncParagraphsToNlp } from '../utils/paragraphUtils';
+import { useSessionStore } from './sessionStore';
 import { db } from '@backend/db/database';
 
 export interface UserDocument {
@@ -108,7 +108,7 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
           })
           .select()
           .single()
-          .then(({ data, error }) => {
+          .then(({ data, error }: { data: any; error: any }) => {
             if (error || !data) return null;
             return data as Record<string, unknown>;
           });

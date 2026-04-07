@@ -73,7 +73,7 @@ export function loadArchivedSessions(): ArchivedSession[] {
   }
 }
 
-export function archiveSession(session: Partial<ArchivedSession> & { startTime: string; mode?: string; title?: string }): ArchivedSession {
+export function archiveSession(session: Partial<ArchivedSession> & { startTime: string; mode?: string; title?: string; words?: number; paragraphs?: number }): ArchivedSession {
   const archives = loadArchivedSessions();
   const endTime = new Date().toISOString();
   const now = Date.now();
@@ -110,6 +110,6 @@ export function generateInsights(session: { duration: number; wordsRead: number;
   };
 }
 
-export function finalizeAndArchiveSession(session: Partial<ArchivedSession> & { startTime: string; mode: string; title?: string }): ArchivedSession {
+export function finalizeAndArchiveSession(session: Partial<ArchivedSession> & { startTime: string; mode: string; title?: string; words?: number; paragraphs?: number }): ArchivedSession {
   return archiveSession(session);
 }
