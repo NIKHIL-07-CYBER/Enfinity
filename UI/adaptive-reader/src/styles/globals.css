@@ -148,6 +148,68 @@ body {
   pointer-events: auto !important;
 }
 
+/* ═══════════════ Zero-Chrome Immersive Mode ═══════════════
+   YouTube-like fullscreen: absolutely nothing but the text.
+   Activated via FocusModeButton → enterZeroChrome()
+   ══════════════════════════════════════════════════════════ */
+
+.zero-chrome-active .chrome-shell,
+.zero-chrome-active nav,
+.zero-chrome-active header,
+.zero-chrome-active .chatbot-avatar,
+.zero-chrome-active .chatbot-panel,
+.zero-chrome-active .active-paragraph-box,
+.zero-chrome-active .selection-toolbar,
+.zero-chrome-active .telemetry-debug-overlay,
+.zero-chrome-active .permission-mode-panel,
+.zero-chrome-active .manual-hover-box,
+.zero-chrome-active .summary-drawer,
+.zero-chrome-active .cognate-indicator,
+.zero-chrome-active .cognate-panel,
+.zero-chrome-active .eye-strain-control,
+.zero-chrome-active .break-prompt {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 800ms ease-out !important;
+}
+
+/* Hide the sidebar completely in zero-chrome */
+.zero-chrome-active [style*="width: 160px"],
+.zero-chrome-active [style*="width:160px"] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 800ms ease-out !important;
+}
+
+/* Center the reading container with generous padding */
+.zero-chrome-active .reading-container {
+  max-width: 720px !important;
+  margin: 0 auto !important;
+  padding: 48px 24px !important;
+  transition: max-width 500ms ease-in-out, padding 500ms ease-in-out;
+}
+
+/* Auto-hide cursor after 3s of no movement */
+.zero-chrome-active.cursor-hidden {
+  cursor: none !important;
+}
+
+.zero-chrome-active.cursor-hidden * {
+  cursor: none !important;
+}
+
+/* Focus button stays accessible in zero-chrome */
+.zero-chrome-active .focus-mode-button {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Smooth body background during zero-chrome */
+.zero-chrome-active {
+  background-color: var(--bg-primary) !important;
+  transition: background-color 800ms ease;
+}
+
 /* Dark/Sepia themes defined in dark-overrides.css — single source of truth */
 
 /* Highlight swatches for selection toolbar (no hex in TSX) */

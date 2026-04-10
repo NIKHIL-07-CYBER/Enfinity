@@ -88,6 +88,46 @@ function emitAdaptation(
   return true;
 }
 
+/**
+ * Tracks per-paragraph stall velocity: how many different words stalled in each paragraph.
+ * When 3+ different words stall in the same paragraph, the ESL threshold drops to 1.
+ */
+const paragraphStallWords: Record<string, Set<string>> = {};
+
+/**
+ * Reads the user's chosen reading language from settings (localStorage).
+ * Falls back to detectUserLanguage() (browser language) if not set.
+ */
+function getTargetLanguage(): string {
+  try {
+    const stored = localStorage.getItem('reader_settings');
+    if (stored) {
+      const settings = JSON.parse(stored) as { defaultLanguage?: string };
+      if (settings.defaultLanguage && settings.defaultLanguage !== 'en') {
+        return settings.defaultLanguage;
+      }
+    }
+  } catch { /* ignore */ }
+  return detectUserLanguage();
+}
+
+/**
+ * Reads the cognate sensitivity (stall threshold) from settings.
+ * Defaults to ESL_STALL_THRESHOLD if not configured.
+ */
+function getCognateSensitivity(): number {
+  try {
+    const stored = localStorage.getItem('reader_settings');
+    if (stored) {
+      const settings = JSON.parse(stored) as { cognateSensitivity?: number };
+      if (typeof settings.cognateSensitivity === 'number') {
+        return settings.cognateSensitivity;
+      }
+    }
+  } catch { /* ignore */ }
+  return ESL_STALL_THRESHOLD;
+}
+
 // ─── triggerAdaptation handler (Phase 3 Integration) ──────────────────────────
 
 adaptationBus.on("triggerAdaptation", async (event: TriggerAdaptationEvent) => {
@@ -130,9 +170,16 @@ adaptationBus.on("triggerAdaptation", async (event: TriggerAdaptationEvent) => {
 
   const normalizedWord = wordToAdapt.toLowerCase().replace(/[^a-z]/g, "");
   
-  // 4. Update Stall Counts
+  // 4. Update Stall Counts (global + per-paragraph velocity)
   stallCounts[normalizedWord] = (stallCounts[normalizedWord] || 0) + 1;
   const currentStalls = stallCounts[normalizedWord];
+
+  // Track per-paragraph stall velocity
+  if (!paragraphStallWords[paragraphId]) {
+    paragraphStallWords[paragraphId] = new Set();
+  }
+  paragraphStallWords[paragraphId].add(normalizedWord);
+  const paragraphStallVelocity = paragraphStallWords[paragraphId].size;
 
   // 5. Decision Tree
   
@@ -146,10 +193,20 @@ adaptationBus.on("triggerAdaptation", async (event: TriggerAdaptationEvent) => {
   }
 
   // Option B: ESL Cognate Mode (High Priority for struggling non-native readers)
-  const userLang = detectUserLanguage();
-  if (userLang !== "en" && currentStalls >= ESL_STALL_THRESHOLD) {
+  // Use user's chosen language from settings, not browser language
+  const userLang = getTargetLanguage();
+  const cognateSensitivity = getCognateSensitivity();
+  // If 3+ words stalled in the same paragraph, drop threshold to 1 (aggressive cognate mode)
+  const effectiveThreshold = paragraphStallVelocity >= 3 ? 1 : cognateSensitivity;
+
+  if (userLang !== "en" && currentStalls >= effectiveThreshold) {
     const cognate = await fetchCognate(wordToAdapt, userLang);
     if (cognate) {
+      if (paragraphStallVelocity >= 3) {
+        console.log(
+          `[ADAPTATION] Aggressive cognate mode — ${paragraphStallVelocity} words stalled in paragraph ${paragraphId}`
+        );
+      }
       emitAdaptation(paragraphId, paragraph.text, wordToAdapt, cognate, "cognate", 0.85);
       return;
     }

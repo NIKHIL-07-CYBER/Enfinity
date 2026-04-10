@@ -1,19 +1,31 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { ParagraphBlock } from './ParagraphBlock';
 import { useSessionStore } from '@/store/sessionStore';
 import { useTelemetryStore } from '@/store/telemetryStore';
 import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
+import { useConceptGraphStore } from '@/store/conceptGraphStore';
+import { ReviewSheet } from '@/components/Review/ReviewSheet';
 
 export const ReadingContainer: React.FC = () => {
   const paragraphs = useSessionStore(s => s.paragraphs);
   const navigate = useNavigate();
   const navigateRef = useRef(navigate);
-  const timerRef = useRef<number | null>(null);
+  const showReviewSheet = useConceptGraphStore(s => s.showReviewSheet);
+  const hideReviewSheet = useConceptGraphStore(s => s.hideReviewSheet);
 
   useEffect(() => {
     navigateRef.current = navigate;
   }, [navigate]);
+
+  const handleContinueToReview = useCallback(() => {
+    hideReviewSheet();
+    navigateRef.current(ROUTES.review);
+  }, [hideReviewSheet]);
+
+  const handleDismissReview = useCallback(() => {
+    hideReviewSheet();
+  }, [hideReviewSheet]);
 
   useEffect(() => {
     const sentinel = document.getElementById("chapter-end-sentinel");
@@ -22,14 +34,8 @@ export const ReadingContainer: React.FC = () => {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         observer.disconnect();
-        timerRef.current = window.setTimeout(() => {
-          navigateRef.current(ROUTES.review);
-        }, 2000);
-      } else {
-        if (timerRef.current) {
-          clearTimeout(timerRef.current);
-          timerRef.current = null;
-        }
+        // Show concept graph review sheet instead of auto-navigating
+        showReviewSheet();
       }
     }, { threshold: 0.95 });
 
@@ -37,9 +43,8 @@ export const ReadingContainer: React.FC = () => {
 
     return () => {
       observer.disconnect();
-      if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, []);
+  }, [showReviewSheet]);
 
   if (!paragraphs || paragraphs.length === 0) {
     return (
@@ -91,6 +96,12 @@ export const ReadingContainer: React.FC = () => {
       </div>
       
       <div id="chapter-end-sentinel" style={{ height: "1px" }} />
+      
+      {/* Concept Graph Review Sheet — appears at chapter end */}
+      <ReviewSheet
+        onContinueToReview={handleContinueToReview}
+        onDismiss={handleDismissReview}
+      />
     </div>
   );
 };

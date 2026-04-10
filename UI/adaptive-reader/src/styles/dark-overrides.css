@@ -213,3 +213,23 @@ html.dark :focus-visible {
 html.sepia :focus-visible {
   outline-color: var(--accent-blue);
 }
+
+/* ═══════════════ Zero-Chrome Theme Overrides ═══════════════ */
+
+html.dark.zero-chrome-active {
+  background-color: var(--bg-primary) !important;
+}
+
+html.dark.zero-chrome-active .reading-container {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+html.sepia.zero-chrome-active {
+  background-color: var(--bg-primary) !important;
+}
+
+html.sepia.zero-chrome-active .reading-container {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}

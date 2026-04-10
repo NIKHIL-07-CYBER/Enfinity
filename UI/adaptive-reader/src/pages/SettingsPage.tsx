@@ -10,6 +10,8 @@ interface ReaderSettings {
   fontSize: number;
   theme: 'light' | 'sepia' | 'dark';
   brightnessAdapterEnabled: boolean;
+  eslCognateEnabled: boolean;
+  cognateSensitivity: number;
 }
 
 const DEFAULT_SETTINGS: ReaderSettings = {
@@ -18,6 +20,8 @@ const DEFAULT_SETTINGS: ReaderSettings = {
   fontSize: 18,
   theme: 'light',
   brightnessAdapterEnabled: true,
+  eslCognateEnabled: true,
+  cognateSensitivity: 3,
 };
 
 const LANGUAGES = [
@@ -190,6 +194,48 @@ export const SettingsPage: React.FC = () => {
             />
           </button>
         </div>
+
+        {/* ESL Cognate Support */}
+        <div className="mb-8 flex items-center justify-between p-4 rounded-lg border" style={{ borderColor: 'var(--card-border)' }}>
+          <div>
+            <span className="text-sm font-bold block" style={{ color: 'var(--text-color)' }}>ESL Cognate Support</span>
+            <span className="text-[11px] block mt-0.5" style={{ color: 'var(--nav-text)' }}>Swap difficult words with cognates from your language</span>
+          </div>
+          <button
+            onClick={() => update({ eslCognateEnabled: !settings.eslCognateEnabled })}
+            className="relative w-12 h-6 rounded-full transition-colors"
+            style={{ backgroundColor: settings.eslCognateEnabled ? 'var(--accent-blue)' : 'var(--border-color)' }}
+          >
+            <div
+              className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+              style={{ left: settings.eslCognateEnabled ? '26px' : '2px' }}
+            />
+          </button>
+        </div>
+
+        {/* Cognate Sensitivity */}
+        {settings.eslCognateEnabled && (
+          <div className="mb-8">
+            <label className="block text-sm font-bold mb-2" style={{ color: 'var(--text-color)' }}>
+              Cognate Sensitivity: {settings.cognateSensitivity} stall{settings.cognateSensitivity !== 1 ? 's' : ''}
+            </label>
+            <p className="text-[11px] mb-3" style={{ color: 'var(--nav-text)' }}>
+              How many times you must stall on a word before a cognate swap triggers
+            </p>
+            <input
+              type="range"
+              min={1}
+              max={5}
+              value={settings.cognateSensitivity}
+              onChange={(e) => update({ cognateSensitivity: Number(e.target.value) })}
+              className="w-full"
+              style={{ accentColor: 'var(--accent-blue)' }}
+            />
+            <div className="flex justify-between text-[10px] mt-1" style={{ color: 'var(--nav-text)' }}>
+              <span>1 (Aggressive)</span><span>5 (Conservative)</span>
+            </div>
+          </div>
+        )}
 
         {/* Reset All */}
         <div className="pt-8 border-t" style={{ borderColor: 'var(--card-border)' }}>
