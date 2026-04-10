@@ -3,12 +3,16 @@ builder = "NIXPACKS"
 buildCommand = "npm run build"
 
 [deploy]
-startCommand = "npm run start"
+startCommand = "node dist/server/index.js"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
 
 [env]
 PORT = "3001"
-FRONTEND_URL = "https://your-vercel-frontend-url.vercel.app"
-LIBRE_TRANSLATE_URL = "http://localhost:5000/translate"
+# Add other environment variables here as needed
+# FRONTEND_URL = "..."
+# DATABASE_URL = "..."
+
+[watch]
+paths = ["backend/**"]

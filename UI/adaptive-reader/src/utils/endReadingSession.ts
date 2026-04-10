@@ -1,9 +1,9 @@
-import { supabase } from '@/lib/supabase';
-import { useAuthStore } from '@/store/authStore';
-import { useSessionStore } from '@/store/sessionStore';
-import { useTelemetryStore } from '@/store/telemetryStore';
+import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../store/authStore';
+import { useSessionStore } from '../store/sessionStore';
+import { useTelemetryStore } from '../store/telemetryStore';
 import { useConceptStore } from '@telemetry';
-import { useDocumentStore } from '@/store/documentStore';
+import { useDocumentStore } from '../store/documentStore';
 
 export async function endReadingSession(): Promise<void> {
   const user = useAuthStore.getState().user;

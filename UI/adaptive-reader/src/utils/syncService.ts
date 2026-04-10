@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase';
-import type { SelectionEntry } from '@/store/selectionStore';
+import { supabase } from '../lib/supabase';
+import type { SelectionEntry } from '../store/selectionStore';
 
 function readSelectionEntries(): SelectionEntry[] {
   try {
@@ -44,8 +44,8 @@ export async function loadFromSupabase(userId: string): Promise<void> {
       .eq('user_id', userId);
     if (docErr) return;
 
-    const { parseRawTextToParagraphs } = await import('@/utils/paragraphUtils');
-    const { useDocumentStore } = await import('@/store/documentStore');
+    const { parseRawTextToParagraphs } = await import('./paragraphUtils');
+    const { useDocumentStore } = await import('../store/documentStore');
 
     if (docs?.length) {
       const mapped = [];
