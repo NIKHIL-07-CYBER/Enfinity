@@ -36,7 +36,7 @@ export const ArchivePage: React.FC = () => {
           loaded.push({
             id: session.id,
             title: session.title || 'Untitled',
-            date: session.date || new Date(session.endTime).toLocaleDateString('en-US', {
+            date: session.insights?.date || new Date(session.endTime).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
               year: 'numeric',
