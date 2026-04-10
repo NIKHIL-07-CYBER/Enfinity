@@ -205,6 +205,10 @@ Be concise (under 120 words). Use simple language. If they ask about a specific 
 registerDocumentRoutes(app);
 registerSummarizeRoutes(app);
 
-app.listen(PORT, () => {
-  console.warn(`Express Proxy Server listening on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.warn(`Express Proxy Server listening on port ${PORT}`);
+  });
+}
+
+export const appInstance = app;
