@@ -15,6 +15,7 @@ const allowedOrigins = [
   'http://localhost:5174', 
   'http://localhost:5175', 
   'http://localhost:3000',
+  'https://dashing-nougat-c66726.netlify.app',
   process.env.FRONTEND_URL || 'https://your-vercel-frontend-url.vercel.app'
 ];
 
@@ -29,14 +30,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
-const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:5173';
-
-app.options('/api/translate', (req, res) => {
-  res.header('Access-Control-Allow-Origin', FRONTEND);
-  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Accept');
-  res.status(204).end();
-});
+// The generalized `cors()` module governs preflight handling and authorized domains.
 
 // Timing Middleware
 app.use((req, res, next) => {
@@ -65,9 +59,6 @@ app.get('/api/health', (req, res) => {
 let useFallbackPriority = false;
 
 app.post('/api/translate', async (req, res) => {
-  res.header('Access-Control-Allow-Origin', FRONTEND);
-  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Accept');
 
   const qRaw = req.body?.text ?? req.body?.q;
   const q = typeof qRaw === 'string' ? qRaw.trim() : '';
