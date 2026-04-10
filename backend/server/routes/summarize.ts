@@ -65,7 +65,7 @@ export function registerSummarizeRoutes(app: Express): void {
       try {
         const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
         const model = genAI.getGenerativeModel({ 
-          model: "gemini-1.5-flash",
+          model: "gemini-2.5-flash-lite",
           systemInstruction: 'You are an expert academic summarizer. Summarize the following text in 3-5 bullet points. Each bullet should be one clear sentence. Focus on key concepts, main arguments, and important terms. Do not include introduction or conclusion fluff.'
         });
 

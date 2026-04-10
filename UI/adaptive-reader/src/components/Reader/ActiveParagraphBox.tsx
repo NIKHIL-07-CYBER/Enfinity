@@ -19,7 +19,7 @@ export const ActiveParagraphBox: React.FC = () => {
       className="active-paragraph-box"
       style={{
         position: 'fixed',
-        left: '12px',
+        right: '24px',
         top: '50%',
         transform: 'translateY(-50%)',
         width: '48px',

@@ -8,6 +8,7 @@ import { ArchivePage } from '@/pages/ArchivePage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { AuthPage } from '@/pages/AuthPage';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { ConceptGraphPage } from '@/pages/ConceptGraphPage';
 import { ROUTES } from '@/constants/routes';
 import { SelectionPanel } from '@/components/Selection/SelectionPanel';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -44,6 +45,7 @@ const App: React.FC = () => {
         <Route path={ROUTES.auth} element={<AuthPage />} />
         <Route path={ROUTES.upload} element={<UploadPage />} />
         <Route path={ROUTES.read} element={<ReadPage />} />
+        <Route path={ROUTES.graph} element={<ConceptGraphPage />} />
         <Route
           path={ROUTES.review}
           element={

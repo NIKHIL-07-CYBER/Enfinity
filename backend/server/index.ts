@@ -179,7 +179,7 @@ app.post('/api/chat', async (req, res) => {
 
   const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
   const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
+    model: "gemini-2.5-flash-lite",
     systemInstruction: `You are a reading assistant helping a student understand a text.
 Context about what they are currently reading: ${context || 'No context available'}
 Be concise (under 120 words). Use simple language. If they ask about a specific word, give definition + example sentence. Focus only on the text.`
@@ -206,7 +206,7 @@ Be concise (under 120 words). Use simple language. If they ask about a specific 
     // Fallback to Anthropic if key exists and Google fails? 
     // No, better to report Google error since we are switching.
     return res.json(wrapSuccess({
-      response: "I'm having trouble connecting to Google AI. Try again."
+      response: "I'm having trouble connecting to Google AI. Try again. Error: " + error?.message
     }));
   }
 });

@@ -75,13 +75,13 @@ export const UploadPage: React.FC = () => {
       <main className="w-full flex-1 flex flex-col items-center pt-24 pb-8 px-4 max-w-6xl mx-auto w-full">
         <h1
           className="text-4xl md:text-[54px] mb-4 text-center max-w-full px-4"
-          style={{ fontFamily: '"Atkinson Hyperlegible", serif', fontWeight: 700, color: 'var(--text-color)' }}
+          style={{ fontFamily: 'var(--font-ui)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}
         >
           Library
         </h1>
         <p
           className="text-center text-[17px] mb-10 max-w-[600px] px-6 sm:px-4"
-          style={{ color: 'var(--nav-text)', lineHeight: 1.6 }}
+          style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-ui)', lineHeight: 1.6 }}
         >
           Upload text, markdown, or PDF. Save to your account to sync across devices.
         </p>

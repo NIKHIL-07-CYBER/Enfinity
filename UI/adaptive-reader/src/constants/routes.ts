@@ -8,4 +8,5 @@ export const ROUTES = {
   saved: '/saved',
   auth: '/auth',
   dashboard: '/dashboard',
+  graph: '/graph',
 } as const;

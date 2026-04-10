@@ -9,6 +9,7 @@ export interface UIState {
   summaryDrawerOpen: boolean;
   zeroChrome: boolean;
   showExitHint: boolean;
+  eyeStrainVisible: boolean;
   setChromeVisible: (v: boolean) => void;
   setChromeOpacity: (v: number) => void;
   triggerBurst: () => void;
@@ -17,6 +18,7 @@ export interface UIState {
   enterZeroChrome: () => void;
   exitZeroChrome: () => void;
   setShowExitHint: (v: boolean) => void;
+  toggleEyeStrain: () => void;
 }
 
 function readBoolLS(key: string, fallback: boolean): boolean {
@@ -36,6 +38,7 @@ export const useUIStore = create<UIState>((set) => ({
   summaryDrawerOpen: false,
   zeroChrome: false,
   showExitHint: false,
+  eyeStrainVisible: false,
 
   setChromeVisible: (v) => set({ chromeVisible: v }),
   setChromeOpacity: (v) => set({ chromeOpacity: v }),
@@ -85,5 +88,7 @@ export const useUIStore = create<UIState>((set) => ({
   },
 
   setShowExitHint: (v) => set({ showExitHint: v }),
+
+  toggleEyeStrain: () => set((state) => ({ eyeStrainVisible: !state.eyeStrainVisible })),
 }));
 

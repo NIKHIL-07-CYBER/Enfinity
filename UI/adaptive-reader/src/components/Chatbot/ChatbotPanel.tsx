@@ -248,20 +248,7 @@ export const ChatbotPanel: React.FC = () => {
         </div>
       </div>
 
-      <div
-        style={{
-          height: '32px',
-          background: 'var(--accent-blue-bg)',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 12px',
-          fontSize: '11px',
-          color: 'var(--accent-blue)',
-          flexShrink: 0,
-        }}
-      >
-        {contextExcerpt ? `Context: ${contextExcerpt}…` : `Reading: ${articleTitle}`}
-      </div>
+
 
       <div
         style={{

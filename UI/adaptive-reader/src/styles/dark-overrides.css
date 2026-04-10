@@ -8,17 +8,19 @@ html.sepia {
   --text-primary: #3d2b1f;
   --text-secondary: #6b4c35;
   --text-tertiary: #8a6b52;
-  --border-color: rgba(109, 76, 53, 0.22);
-  --border-hover: rgba(109, 76, 53, 0.38);
-  --accent-blue: #1a5fa8;
-  --accent-blue-bg: rgba(26, 95, 168, 0.1);
-  --accent-blue-light: rgba(26, 95, 168, 0.1);
-  --selection-bg: rgba(26, 95, 168, 0.15);
-  --accent-border-subtle: rgba(26, 95, 168, 0.3);
-  --accent-border-strong: rgba(26, 95, 168, 0.55);
-  --accent-surface: rgba(26, 95, 168, 0.08);
-  --toolbar-surface: color-mix(in srgb, #ede8d8 92%, #1a5fa8 8%);
+  --border-color: rgba(109, 76, 53, 0.18);
+  --border-hover: rgba(109, 76, 53, 0.32);
+  --accent-blue: #2563eb;
+  --accent-blue-bg: rgba(37, 99, 235, 0.08);
+  --accent-blue-light: rgba(37, 99, 235, 0.08);
+  --selection-bg: rgba(37, 99, 235, 0.15);
+  --accent-border-subtle: rgba(37, 99, 235, 0.25);
+  --accent-border-strong: rgba(37, 99, 235, 0.50);
+  --accent-surface: rgba(37, 99, 235, 0.06);
+  --toolbar-surface: color-mix(in srgb, #ede8d8 92%, #2563eb 8%);
   --toolbar-on-accent: #ffffff;
+  --shadow-soft: 0 1px 3px rgba(60,40,20,0.05), 0 6px 16px rgba(60,40,20,0.04);
+  --shadow-float: 0 4px 12px rgba(60,40,20,0.08), 0 20px 40px rgba(60,40,20,0.06);
 
   /* Legacy aliases */
   --bg-color: var(--bg-primary);
@@ -27,7 +29,6 @@ html.sepia {
   --nav-text: var(--text-secondary);
   --card-border: var(--border-color);
 
-  /* Apply warm background and dark-brown text to all inheriting elements */
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -36,24 +37,27 @@ html.sepia {
    Dark mode token overrides
    =================================================================== */
 html.dark {
-  --bg-primary: #0f1117;
-  --bg-secondary: #17191f;
-  --bg-tertiary: #1e2130;
-  --text-primary: #edebe4;
-  --text-secondary: #9b9893;
-  --text-tertiary: #5e5c57;
-  --border-color: rgba(237, 235, 228, 0.11);
-  --border-hover: rgba(237, 235, 228, 0.22);
-  --accent-blue: #6aabec;
-  --accent-blue-bg: rgba(106, 171, 236, 0.13);
-  --accent-blue-light: rgba(106, 171, 236, 0.13);
-  --selection-bg: rgba(106, 171, 236, 0.22);
-  --accent-border-subtle: rgba(106, 171, 236, 0.32);
-  --accent-border-strong: rgba(106, 171, 236, 0.58);
-  --accent-surface: rgba(106, 171, 236, 0.1);
-  --toolbar-surface: color-mix(in srgb, #17191f 90%, #6aabec 10%);
+  --bg-primary: #0c0d12;
+  --bg-secondary: #141520;
+  --bg-tertiary: #1c1d2b;
+  --text-primary: #eeedf0;
+  --text-secondary: #8f8d96;
+  --text-tertiary: #5a5862;
+  --border-color: rgba(238, 237, 240, 0.08);
+  --border-hover: rgba(238, 237, 240, 0.18);
+  --accent-blue: #60a5fa;
+  --accent-blue-bg: rgba(96, 165, 250, 0.10);
+  --accent-blue-light: rgba(96, 165, 250, 0.10);
+  --selection-bg: rgba(96, 165, 250, 0.20);
+  --accent-border-subtle: rgba(96, 165, 250, 0.25);
+  --accent-border-strong: rgba(96, 165, 250, 0.50);
+  --accent-surface: rgba(96, 165, 250, 0.08);
+  --toolbar-surface: color-mix(in srgb, #141520 90%, #60a5fa 10%);
   --toolbar-on-accent: #ffffff;
-  --toast-bg: rgba(15, 17, 23, 0.94);
+  --toast-bg: rgba(12, 13, 18, 0.95);
+  --shadow-soft: 0 1px 3px rgba(0,0,0,0.2), 0 6px 16px rgba(0,0,0,0.15);
+  --shadow-float: 0 4px 12px rgba(0,0,0,0.3), 0 20px 40px rgba(0,0,0,0.25);
+  --shadow-glow: 0 0 0 1px rgba(96, 165, 250, 0.15), 0 4px 16px rgba(96, 165, 250, 0.10);
 
   /* Legacy aliases */
   --bg-color: var(--bg-primary);
@@ -62,7 +66,6 @@ html.dark {
   --nav-text: var(--text-secondary);
   --card-border: var(--border-color);
 
-  /* Force the root element to use dark colours so all inheriting children get white text */
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
