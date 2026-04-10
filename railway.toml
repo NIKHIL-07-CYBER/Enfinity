@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "cd backend && npm install && npm run build"
+buildCommand = "cd backend && npm install && npm run build && ls -la dist/server/"
 
 [deploy]
 startCommand = "cd backend && node dist/server/index.js"
@@ -9,8 +9,6 @@ healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
 
 [env]
-# Railway will automatically set PORT to a dynamic port
-# Make sure your app listens on the PORT environment variable
 PORT = "3001"
 FRONTEND_URL = "https://adaptive-reader.vercel.app"
-LIBRE_TRANSLATE_URL = "http://localhost:5000/translate"
+NODE_ENV = "production"

@@ -2,9 +2,30 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { registerDocumentRoutes } from './routes/documents';
-import { registerSummarizeRoutes } from './routes/summarize';
+
+let GoogleGenerativeAI: any;
+let registerDocumentRoutes: any;
+let registerSummarizeRoutes: any;
+
+try {
+  GoogleGenerativeAI = require('@google/generative-ai').GoogleGenerativeAI;
+} catch (e) {
+  console.warn('[WARN] Could not load GoogleGenerativeAI:', (e as any).message);
+}
+
+try {
+  ({ registerDocumentRoutes } = require('./routes/documents'));
+} catch (e) {
+  console.warn('[WARN] Could not load document routes:', (e as any).message);
+  registerDocumentRoutes = (app: any) => {}; // Fallback
+}
+
+try {
+  ({ registerSummarizeRoutes } = require('./routes/summarize'));
+} catch (e) {
+  console.warn('[WARN] Could not load summarize routes:', (e as any).message);
+  registerSummarizeRoutes = (app: any) => {}; // Fallback
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -220,12 +241,31 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json(wrapError(err.message || 'Internal server error'));
 });
 
+// Catch-all for 404
+app.use((req, res) => {
+  res.status(404).json(wrapError(`Route not found: ${req.method} ${req.path}`));
+});
+
 const PORT_NUM = parseInt(process.env.PORT || '3001', 10);
-app.listen(PORT_NUM, '0.0.0.0', () => {
+
+const server = app.listen(PORT_NUM, '0.0.0.0', () => {
   console.log(`✓ Express Proxy Server listening on port ${PORT_NUM}`);
   console.log(`✓ Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
   console.log(`✓ LibreTranslate URL: ${process.env.LIBRE_TRANSLATE_URL || 'http://localhost:5000/translate'}`);
-}).on('error', (err: any) => {
-  console.error('[FATAL] Failed to start server:', err);
+  console.log(`✓ NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+});
+
+server.on('error', (err: any) => {
+  console.error('[FATAL] Server error:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason: any, promise: any) => {
+  console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (err: any) => {
+  console.error('[FATAL] Uncaught Exception:', err);
   process.exit(1);
 });
