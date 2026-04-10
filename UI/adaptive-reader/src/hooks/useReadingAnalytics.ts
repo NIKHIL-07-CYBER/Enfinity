@@ -1,6 +1,21 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useAuthStore } from '@/store/authStore';
+// Updated to relative path to ensure module resolution if path aliases fail
+import { supabase } from '../lib/supabase'; 
+import { useAuthStore } from '../store/authStore';
+
+// LOCAL INTERFACES FOR TYPE SAFETY
+interface SessionRow {
+  created_at?: string;
+  struggled_terms?: string[];
+  [key: string]: any;
+}
+
+interface AnalyticsRow {
+  date: string;
+  minutes_read?: number;
+  avg_wpm?: number;
+  [key: string]: any;
+}
 
 export interface ReadingMetrics {
   totalMinutesThisWeek: number;
@@ -11,9 +26,10 @@ export interface ReadingMetrics {
 }
 
 export function useReadingAnalytics() {
+  // Fix: Explicitly type the selector to avoid implicit 'any'
   const user = useAuthStore((s) => s.user);
-  const [sessions, setSessions] = useState<Record<string, unknown>[]>([]);
-  const [dailyData, setDailyData] = useState<Record<string, unknown>[]>([]);
+  const [sessions, setSessions] = useState<SessionRow[]>([]);
+  const [dailyData, setDailyData] = useState<AnalyticsRow[]>([]);
   const [metrics, setMetrics] = useState<ReadingMetrics>({
     totalMinutesThisWeek: 0,
     avgWPMThisWeek: 0,
@@ -24,6 +40,7 @@ export function useReadingAnalytics() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Phase 1 Contract: Check for both user and env presence
     if (!user?.id || !import.meta.env.VITE_SUPABASE_URL) {
       setIsLoading(false);
       return;
@@ -47,59 +64,73 @@ export function useReadingAnalytics() {
         .from('reading_analytics')
         .select('*')
         .eq('user_id', user.id)
-        .gte('date', since.toISOString().split('T')[0]);
+        .gte('date', since.toISOString().split('T'));
 
       if (cancelled) return;
 
-      setSessions(sess ?? []);
-      setDailyData(daily ?? []);
+      const sessionRows = (sess as SessionRow[]) ?? [];
+      const dailyRows = (daily as AnalyticsRow[]) ?? [];
+
+      setSessions(sessionRows);
+      setDailyData(dailyRows);
 
       const now = new Date();
       const weekAgo = new Date(now);
       weekAgo.setDate(weekAgo.getDate() - 7);
-      const weekRows = (daily ?? []).filter((d) => {
-        const dt = new Date(String((d as { date: string }).date));
+
+      // Fix: Parameter 'd' explicitly typed to AnalyticsRow
+      const weekRows = dailyRows.filter((d: AnalyticsRow) => {
+        const dt = new Date(String(d.date));
         return dt >= weekAgo;
       });
+
+      // Fix: Parameters 'a' and 'd' explicitly typed
       const totalMinutesThisWeek = weekRows.reduce(
-        (a, d) => a + Number((d as { minutes_read?: number }).minutes_read ?? 0),
+        (a: number, d: AnalyticsRow) => a + Number(d.minutes_read ?? 0),
         0,
       );
+
       const avgWPMThisWeek =
         weekRows.length > 0
-          ? weekRows.reduce((a, d) => a + Number((d as { avg_wpm?: number }).avg_wpm ?? 0), 0) /
+          ? weekRows.reduce((a: number, d: AnalyticsRow) => a + Number(d.avg_wpm ?? 0), 0) /
             weekRows.length
           : 0;
 
       const month = now.getMonth();
       const year = now.getFullYear();
-      const totalSessionsThisMonth = (sess ?? []).filter((s) => {
-        const c = new Date(String((s as { created_at?: string }).created_at ?? 0));
+      
+      // Fix: Parameter 's' explicitly typed
+      const totalSessionsThisMonth = sessionRows.filter((s: SessionRow) => {
+        const c = new Date(String(s.created_at ?? 0));
         return c.getMonth() === month && c.getFullYear() === year;
       }).length;
 
-      const dates = [...new Set((daily ?? []).map((d) => String((d as { date: string }).date)))].sort();
+      // Fix: Parameter 'd' explicitly typed
+      const dates = [...new Set(dailyRows.map((d: AnalyticsRow) => String(d.date)))].sort();
+      
       let streak = 0;
       const today = new Date();
       for (let i = 0; i < 60; i++) {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
-        const key = d.toISOString().split('T')[0];
+        const key = d.toISOString().split('T');
         if (dates.includes(key)) streak++;
         else if (i === 0) continue;
         else break;
       }
 
       const termCount: Record<string, number> = {};
-      for (const row of sess ?? []) {
-        const terms = (row as { struggled_terms?: string[] }).struggled_terms ?? [];
+      for (const row of sessionRows) {
+        const terms = row.struggled_terms ?? [];
         for (const t of terms) {
           const w = t.toLowerCase();
           termCount[w] = (termCount[w] ?? 0) + 1;
         }
       }
+
+      // Fix: Parameters 'a' and 'b' explicitly typed
       const mostStruggled = Object.entries(termCount)
-        .sort((a, b) => b[1] - a[1])
+        .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
         .slice(0, 5)
         .map(([word, count]) => ({ word, count }));
 
