@@ -44,19 +44,51 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   isSummarizing: false,
 
   loadDocuments: async (userId: string) => {
-    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) return;
     set({ isLoading: true });
+    
+    // 1. Always load from local IndexedDB (Dexie) first for zero-latency / offline usage
+    try {
+      const localDocs = await db.documents.where('userId').equals(userId).toArray();
+      const mappedLocal: UserDocument[] = [];
+      
+      for (const row of localDocs) {
+        const paragraphs = await parseRawTextToParagraphs(row.content);
+        mappedLocal.push({
+          id: row.id,
+          title: row.title,
+          content: row.content,
+          paragraphs,
+          wordCount: row.content.split(/\s+/).filter(Boolean).length,
+          paragraphCount: paragraphs.length,
+          summaryStartParagraph: 0,
+          summaryEndParagraph: -1,
+          createdAt: row.createdAt,
+        });
+      }
+      
+      set({ documents: mappedLocal });
+    } catch (e) {
+      console.warn('[documentStore] IndexedDB load failed:', e);
+    }
+
+    // 2. Load from Supabase if configured
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      set({ isLoading: false });
+      return;
+    }
+
     try {
       const { data, error } = await supabase.from('user_documents').select('*').eq('user_id', userId);
       if (error || !data) {
         set({ isLoading: false });
         return;
       }
-      const mapped: UserDocument[] = [];
+      
+      const cloudMapped: UserDocument[] = [];
       for (const row of data as Record<string, unknown>[]) {
         const content = String(row.content ?? '');
         const paragraphs = await parseRawTextToParagraphs(content);
-        mapped.push({
+        cloudMapped.push({
           id: String(row.id),
           title: String(row.title ?? 'Untitled'),
           content,
@@ -72,7 +104,15 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
           createdAt: row.created_at ? String(row.created_at) : new Date().toISOString(),
         });
       }
-      set({ documents: mapped, isLoading: false });
+      
+      // Merge: priority to Supabase docs, but keep unique local docs
+      set((s) => {
+        const existingIds = new Set(cloudMapped.map(d => d.id));
+        const combined = [...cloudMapped, ...s.documents.filter(d => !existingIds.has(d.id))];
+        // Sort by date desc
+        combined.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        return { documents: combined, isLoading: false };
+      });
     } catch {
       set({ isLoading: false });
     }

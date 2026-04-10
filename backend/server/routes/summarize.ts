@@ -31,6 +31,7 @@ export function registerSummarizeRoutes(app: Express): void {
     const authHeader = req.headers.authorization;
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
     const url = process.env.SUPABASE_URL;
+    console.log(url)
     const key = process.env.SUPABASE_SERVICE_KEY;
     if (!token || !url || !key) {
       res.status(401).json({ error: 'Unauthorized' });

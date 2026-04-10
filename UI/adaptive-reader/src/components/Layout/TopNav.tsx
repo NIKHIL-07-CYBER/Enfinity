@@ -10,6 +10,8 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { ModeSelector } from '@/components/Reader/ModeSelector';
 import { useAuthStore } from '@/store/authStore';
 import { useDocumentStore } from '@/store/documentStore';
+import { TimeRemaining } from '@/components/Reader/TimeRemaining';
+import { OfflineBadge } from '@/components/Reader/OfflineBadge';
 
 const NAV_LINKS: { to: string; label: string }[] = [
   { to: ROUTES.upload, label: 'Library' },
@@ -123,6 +125,8 @@ export const TopNav: React.FC = () => {
 
       <div className="flex-1" />
 
+      <OfflineBadge />
+      <TimeRemaining />
       <ThemeToggle />
 
       <div className="relative shrink-0" ref={menuRef}>

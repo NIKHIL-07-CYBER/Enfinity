@@ -1,6 +1,24 @@
 import { useEffect, useState } from 'react';
 import { loadSession } from '../utils/persistence';
 
+/**
+ * Waits for a DOM element matching the selector to appear, using rAF polling.
+ * Resolves with the element, or null after `maxWaitMs` expires.
+ */
+function waitForElement(selector: string, maxWaitMs = 500): Promise<Element | null> {
+  return new Promise((resolve) => {
+    const start = performance.now();
+    function poll() {
+      const el = document.querySelector(selector);
+      if (el) return resolve(el);
+      if (performance.now() - start > maxWaitMs) return resolve(null);
+      requestAnimationFrame(poll);
+    }
+    // Kick off after one frame to let React flush
+    requestAnimationFrame(poll);
+  });
+}
+
 export function useSessionRestore(paragraphsLoaded: boolean) {
   const [restored, setRestored] = useState(false);
 
@@ -19,17 +37,13 @@ export function useSessionRestore(paragraphsLoaded: boolean) {
           savedScrollY = session.scrollY || savedScrollY;
         }
 
-        // Precision Scrolling Setup
+        // Precision Scrolling — wait for DOM element to appear (rAF polling, 500ms max)
         if (savedId) {
-          const el = document.querySelector(`[data-paragraph-id="${savedId}"]`);
+          const el = await waitForElement(`[data-paragraph-id="${savedId}"]`, 500);
           if (el) {
-            setTimeout(() => {
-              el.scrollIntoView({ behavior: 'instant', block: 'start' });
-            }, 150);
+            el.scrollIntoView({ behavior: 'instant', block: 'start' });
           } else if (savedScrollY > 0) {
-            setTimeout(() => {
-              window.scrollTo({ top: savedScrollY, behavior: 'instant' });
-            }, 150);
+            window.scrollTo({ top: savedScrollY, behavior: 'instant' });
           }
         }
         setRestored(true);

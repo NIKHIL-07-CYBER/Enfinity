@@ -127,7 +127,7 @@ export const PermissionModePanel: React.FC = () => {
               borderRadius: '8px',
               border: '1px solid var(--accent-blue)',
               background: 'var(--accent-blue)',
-              color: '#ffffff',
+              color: 'var(--toolbar-on-accent)',
               cursor: 'pointer',
               fontSize: '13px',
               fontWeight: 500,

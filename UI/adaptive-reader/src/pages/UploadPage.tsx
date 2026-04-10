@@ -110,17 +110,66 @@ export const UploadPage: React.FC = () => {
               Or paste text
             </button>
             {showPaste && (
-              <textarea
-                className="w-full max-w-[680px] min-h-[120px] rounded-lg p-3 border text-sm mx-auto block"
-                style={{
-                  background: 'var(--bg-tertiary)',
-                  borderColor: 'var(--border-color)',
-                  color: 'var(--text-primary)',
-                }}
-                placeholder="Paste article text…"
-                value={paste}
-                onChange={(e) => setPaste(e.target.value)}
-              />
+              <div className="w-full max-w-[680px] space-y-3 mx-auto">
+                <textarea
+                  className="w-full min-h-[160px] rounded-lg p-3 border text-sm block"
+                  style={{
+                    background: 'var(--bg-tertiary)',
+                    borderColor: 'var(--border-color)',
+                    color: 'var(--text-primary)',
+                  }}
+                  placeholder="Paste article text here and click 'Start Reading'…"
+                  value={paste}
+                  onChange={(e) => setPaste(e.target.value)}
+                />
+                <button
+                  type="button"
+                  disabled={!paste.trim()}
+                  className="w-full py-3 rounded-lg font-bold text-sm tracking-widest uppercase transition-all"
+                  style={{
+                    backgroundColor: paste.trim() ? 'var(--accent-blue)' : 'var(--bg-secondary)',
+                    color: paste.trim() ? 'white' : 'var(--text-tertiary)',
+                    border: 'none',
+                    cursor: paste.trim() ? 'pointer' : 'not-allowed',
+                    opacity: paste.trim() ? 1 : 0.6
+                  }}
+                  onClick={async () => {
+                    const text = paste.trim();
+                    if (!text) return;
+
+                    const paragraphs = await syncParagraphsToNlp(text);
+                    if (!paragraphs.length) {
+                      toast.error("Could not parse text into paragraphs");
+                      return;
+                    }
+
+                    const tempDoc: UserDocument = {
+                      id: `temp-${Date.now()}`,
+                      title: title || text.slice(0, 30) + "...",
+                      content: text,
+                      userId: user?.id || 'anonymous',
+                      createdAt: new Date().toISOString(),
+                      wordCount: text.split(/\s+/).length,
+                      paragraphCount: paragraphs.length,
+                      paragraphs: paragraphs
+                    };
+
+                    setCurrentDocument(tempDoc);
+                    const sessionStartTime = Date.now();
+                    useSessionStore.getState().setSessionStartTime(sessionStartTime);
+                    void saveSession({
+                      lastParagraphId: paragraphs[0].id,
+                      scrollY: 0,
+                      appliedAdaptations: [],
+                      sessionStartTime,
+                      paragraphs: paragraphs,
+                    });
+                    navigate(ROUTES.read);
+                  }}
+                >
+                  Start Reading
+                </button>
+              </div>
             )}
           </div>
 
@@ -139,9 +188,40 @@ export const UploadPage: React.FC = () => {
                 <div className="h-16 rounded-lg animate-pulse" style={{ background: 'var(--bg-secondary)' }} />
               </div>
             ) : documents.length === 0 ? (
-              <p className="text-sm min-h-[120px] flex items-center justify-center" style={{ color: 'var(--text-tertiary)' }}>
-                Your library is empty. Upload a document to get started.
-              </p>
+              <div className="text-sm min-h-[160px] flex flex-col items-center justify-center gap-4 text-center p-6 border-2 border-dashed rounded-xl" style={{ borderColor: 'var(--border-color)', color: 'var(--text-tertiary)' }}>
+                <p>Your library is empty. Upload a document or try our sample article.</p>
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-lg font-bold text-xs tracking-widest uppercase transition-all"
+                  style={{ background: 'var(--accent-blue-bg)', color: 'var(--accent-blue)' }}
+                  onClick={async () => {
+                    const sampleText = `The Future of Reading\n\nReading is changing faster than ever. In the digital age, our attention is constantly being pulled in multiple directions. The goal of this reader is to provide a focused, adaptive experience that responds to your cognitive needs.\n\nBy tracking how you interact with text, we can identify when you are struggling and provide real-time linguistic support. This isn't just a reader; it's a partner in your learning journey.`;
+                    const paragraphs = await syncParagraphsToNlp(sampleText);
+                    const doc: UserDocument = {
+                      id: 'sample-doc',
+                      title: 'The Future of Reading (Sample)',
+                      content: sampleText,
+                      paragraphs,
+                      wordCount: sampleText.split(/\s+/).length,
+                      paragraphCount: paragraphs.length,
+                      createdAt: new Date().toISOString(),
+                    };
+                    setCurrentDocument(doc);
+                    const startTime = Date.now();
+                    useSessionStore.getState().setSessionStartTime(startTime);
+                    void saveSession({
+                      lastParagraphId: paragraphs[0].id,
+                      scrollY: 0,
+                      appliedAdaptations: [],
+                      sessionStartTime: startTime,
+                      paragraphs: paragraphs,
+                    });
+                    navigate(ROUTES.read);
+                  }}
+                >
+                  Load Sample Article
+                </button>
+              </div>
             ) : (
               <ul className="space-y-3">
                 {documents.map((doc) => (

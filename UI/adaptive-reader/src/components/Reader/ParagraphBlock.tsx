@@ -83,8 +83,8 @@ export const ParagraphBlock = React.memo(({ paragraph }: { paragraph: Paragraph 
     <div
       data-paragraph-id={paragraph.id}
       style={{
-        transition: 'opacity 250ms ease-out, background-color 250ms ease-out',
-        opacity: isActive ? 1 : 0.65,
+        transition: 'opacity 400ms cubic-bezier(0.25, 0.1, 0.25, 1.0), background-color 300ms ease-out, border-color 350ms ease-out',
+        opacity: isActive ? 1 : 'var(--paragraph-opacity, 0.45)' as any,
         backgroundColor: isActive ? 'var(--accent-blue-bg)' : (isQuote ? 'var(--accent-blue-light)' : 'transparent'),
         borderLeft: isStruggling
           ? `3px solid var(--accent-border-strong)`
@@ -92,6 +92,8 @@ export const ParagraphBlock = React.memo(({ paragraph }: { paragraph: Paragraph 
         paddingLeft: '12px',
         willChange: 'opacity',
         minHeight: `${minHeight}px`,
+        backfaceVisibility: 'hidden',
+        transform: 'translateZ(0)',
       }}
       className={`mb-8 p-4 rounded paragraph-block ${isStruggling ? "paragraph-struggling" : ""} ${isQuote ? 'pl-6' : ''}`}
     >

@@ -30,8 +30,9 @@
   --font-size: 18px;
   --max-width: 680px;
   --chrome-opacity: 1;
-  --paragraph-opacity: 1;
+  --paragraph-opacity: 0.45;
   --active-paragraph-bg: transparent;
+  --chart-accent: #4A8FD4;
 }
 
 html.dark,
@@ -198,6 +199,100 @@ html.dark ::placeholder,
 .focus-mode-active .focus-mode-button {
   opacity: 1 !important;
   pointer-events: auto !important;
+}
+
+/* Focus mode — dim non-active paragraphs */
+.focus-mode-active {
+  --paragraph-opacity: 0.1;
+}
+
+/* ═══════════════ CFS Struggle Pulse Animation ═══════════════ */
+@keyframes cfs-pulse {
+  0% {
+    border-left-color: var(--accent-border-strong);
+    box-shadow: -2px 0 6px color-mix(in srgb, var(--accent-blue) 10%, transparent);
+  }
+  50% {
+    border-left-color: var(--accent-blue);
+    box-shadow: -4px 0 16px color-mix(in srgb, var(--accent-blue) 30%, transparent),
+               inset 4px 0 8px color-mix(in srgb, var(--accent-blue) 6%, transparent);
+  }
+  100% {
+    border-left-color: var(--accent-border-strong);
+    box-shadow: -2px 0 6px color-mix(in srgb, var(--accent-blue) 10%, transparent);
+  }
+}
+
+.paragraph-struggling {
+  animation: cfs-pulse 2s ease-in-out infinite;
+}
+
+/* ═══════════════ Mobile Responsive (375px) ═══════════════ */
+@media (max-width: 480px) {
+  .reading-container {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+
+  .active-paragraph-box {
+    display: none;
+  }
+
+  .focus-mode-button {
+    bottom: 16px !important;
+    right: 16px !important;
+    width: 64px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* ═══════════════ Reading Progress Bar ═══════════════ */
+.reading-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: var(--accent-blue);
+  z-index: 9999;
+  transition: width 100ms linear;
+  pointer-events: none;
+  will-change: width;
+}
+
+/* ═══════════════ Offline Badge ═══════════════ */
+.offline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  background: color-mix(in srgb, var(--accent-blue) 12%, var(--bg-tertiary));
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  animation: offline-fade-in 300ms ease-out;
+}
+
+@keyframes offline-fade-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ═══════════════ Time Remaining Badge ═══════════════ */
+.time-remaining-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
 /* Legacy theme classes — sync with themeManager (html.sepia / html.dark preferred) */

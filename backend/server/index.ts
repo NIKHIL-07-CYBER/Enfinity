@@ -62,6 +62,7 @@ app.get('/api/health', (req, res) => {
 });
 
 let useFallbackPriority = false;
+let fallbackRequestCount = 0;
 
 app.post('/api/translate', async (req, res) => {
   res.header('Access-Control-Allow-Origin', FRONTEND);
@@ -77,58 +78,73 @@ app.post('/api/translate', async (req, res) => {
     return res.status(400).json(wrapError('Missing text to translate'));
   }
 
+  // Re-probe Docker every 30 requests to allow recovery
   if (useFallbackPriority) {
-    try {
-      const fallbackRes = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=${source}|${target}`);
-      const fallbackData = await fallbackRes.json();
-      if (fallbackData.responseStatus === 200) {
-        return res.json(wrapSuccess({ translatedText: fallbackData.responseData.translatedText }));
-      }
-    } catch (e) {
-      // Ignore and attempt docker
+    fallbackRequestCount++;
+    if (fallbackRequestCount >= 30) {
+      useFallbackPriority = false;
+      fallbackRequestCount = 0;
     }
   }
 
-  const controller = new AbortController();
-  // Provider Pivot Requirement:
-  const timeoutId = setTimeout(() => controller.abort(), 4000); // 4s timeout
+  // ── Race Strategy: hit both providers simultaneously, use whichever returns first ──
+  const dockerAbort = new AbortController();
+  const dockerTimeout = setTimeout(() => dockerAbort.abort(), 4000);
 
-  try {
+  const myMemoryAbort = new AbortController();
+  const myMemoryTimeout = setTimeout(() => myMemoryAbort.abort(), 5000);
+
+  const dockerPromise = (async () => {
     const startDocker = Date.now();
-    const defaultRes = await fetch('http://localhost:5000/translate', {
+    const r = await fetch('http://localhost:5000/translate', {
       method: 'POST',
       body: JSON.stringify({ q, source, target }),
       headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal
+      signal: dockerAbort.signal,
     });
-    
-    clearTimeout(timeoutId);
-    
+    clearTimeout(dockerTimeout);
+    if (!r.ok) throw new Error(`Docker failure: ${r.status}`);
     if (Date.now() - startDocker >= 410) {
-      useFallbackPriority = true; // Lock memory for demo duration
+      useFallbackPriority = true;
+      fallbackRequestCount = 0;
     }
+    const data = await r.json();
+    return { source: 'docker' as const, data };
+  })();
 
-    if (!defaultRes.ok) throw new Error(`Docker failure: ${defaultRes.status}`);
-    
-    const data = await defaultRes.json();
-    return res.json(wrapSuccess(data));
-  } catch (error) {
-    clearTimeout(timeoutId);
-    console.warn('Docker failed or crossed 410ms, tripping circuit breaker to MyMemory');
-    useFallbackPriority = true; // Hard lock memory
-    
-    try {
-      const fallbackRes = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=${source}|${target}`);
-      const fallbackData = await fallbackRes.json();
-      
-      if (fallbackData.responseStatus === 200) {
-        return res.json(wrapSuccess({ translatedText: fallbackData.responseData.translatedText }));
-      } else {
-        return res.status(500).json(wrapError('Fallback translation failed'));
-      }
-    } catch (fallbackError) {
-      return res.status(500).json(wrapError('Both translation systems failed'));
-    }
+  const myMemoryPromise = (async () => {
+    const r = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=${source}|${target}`,
+      { signal: myMemoryAbort.signal },
+    );
+    clearTimeout(myMemoryTimeout);
+    const data = await r.json();
+    if (data.responseStatus !== 200) throw new Error('MyMemory failed');
+    return { source: 'mymemory' as const, data: { translatedText: data.responseData.translatedText } };
+  })();
+
+  try {
+    // If we already know Docker is slow, skip racing it
+    const candidates = useFallbackPriority
+      ? [myMemoryPromise]
+      : [dockerPromise, myMemoryPromise];
+
+    const winner = await Promise.any(candidates);
+
+    // Cleanup abort controllers
+    dockerAbort.abort();
+    myMemoryAbort.abort();
+    clearTimeout(dockerTimeout);
+    clearTimeout(myMemoryTimeout);
+
+    return res.json(wrapSuccess(winner.data));
+  } catch {
+    // All providers failed
+    dockerAbort.abort();
+    myMemoryAbort.abort();
+    clearTimeout(dockerTimeout);
+    clearTimeout(myMemoryTimeout);
+    return res.status(500).json(wrapError('Both translation systems failed'));
   }
 });
 

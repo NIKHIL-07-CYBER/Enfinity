@@ -1,4 +1,4 @@
-// DONE: Task 7b — Focus mode button
+// DONE: Task 7b — Focus mode button (enhanced: paragraph-opacity control)
 import React from 'react';
 import { useUIStore } from '@/store/uiStore';
 
@@ -10,6 +10,7 @@ export const FocusModeButton: React.FC = () => {
     <button
       className="focus-mode-button"
       onClick={toggleFocusMode}
+      title={focusMode ? 'Exit Focus Mode (Ctrl+Shift+F)' : 'Enter Focus Mode — dims non-active paragraphs (Ctrl+Shift+F)'}
       style={{
         position: 'fixed',
         bottom: '24px',
@@ -30,7 +31,8 @@ export const FocusModeButton: React.FC = () => {
       onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; }}
       onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
     >
-      Focus
+      {focusMode ? '✦ Focus' : 'Focus'}
     </button>
   );
 };
+

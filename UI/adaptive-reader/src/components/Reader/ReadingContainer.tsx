@@ -59,13 +59,13 @@ export const ReadingContainer: React.FC = () => {
   const isHeadingActive = activeParagraphId === headingId;
 
   return (
-    <div className="w-full max-w-[680px] mx-auto px-6 sm:px-12 reading-container" style={{ transition: 'filter 3s ease-in-out' }}>
+    <div className="w-full max-w-[680px] mx-auto px-[24px] sm:px-12 reading-container" style={{ transition: 'filter 3s ease-in-out' }}>
       {/* Heading block — tracked as first element */}
       <div
         data-paragraph-id={headingId}
         style={{
-          transition: 'opacity 250ms ease-out, background-color 250ms ease-out',
-          opacity: isHeadingActive ? 1 : 0.65,
+          transition: 'opacity 400ms cubic-bezier(0.25, 0.1, 0.25, 1.0), background-color 300ms ease-out',
+          opacity: isHeadingActive ? 1 : 'var(--paragraph-opacity, 0.45)' as any,
           backgroundColor: isHeadingActive ? 'var(--accent-blue-bg)' : 'transparent',
           borderLeft: isHeadingActive ? '3px solid var(--accent-border-subtle)' : '3px solid transparent',
           paddingLeft: '12px',
@@ -74,6 +74,8 @@ export const ReadingContainer: React.FC = () => {
           paddingTop: '8px',
           paddingBottom: '8px',
           borderRadius: '4px',
+          backfaceVisibility: 'hidden',
+          transform: 'translateZ(0)',
         }}
       >
         <div style={{ color: 'var(--nav-text)' }} className="text-xs uppercase tracking-widest font-bold mb-4">

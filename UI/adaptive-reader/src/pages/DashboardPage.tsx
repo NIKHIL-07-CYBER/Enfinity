@@ -87,7 +87,7 @@ export const DashboardPage: React.FC = () => {
                     color: 'var(--text-primary)',
                   }}
                 />
-                <Line type="monotone" dataKey="wpm" stroke="#4A8FD4" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="wpm" stroke="var(--chart-accent)" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -106,7 +106,7 @@ export const DashboardPage: React.FC = () => {
                     color: 'var(--text-primary)',
                   }}
                 />
-                <Bar dataKey="minutes" fill="#4A8FD4" fillOpacity={0.6} />
+                <Bar dataKey="minutes" fill="var(--chart-accent)" fillOpacity={0.6} />
               </BarChart>
             </ResponsiveContainer>
           </div>

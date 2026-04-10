@@ -12,6 +12,7 @@ import { FocusModeButton } from '@/components/Reader/FocusModeButton';
 import { SelectionToolbar } from '@/components/Selection/SelectionToolbar';
 import { ChatbotAvatar } from '@/components/Chatbot/ChatbotAvatar';
 import { ChatbotPanel } from '@/components/Chatbot/ChatbotPanel';
+import { ReadingProgressBar } from '@/components/Reader/ReadingProgressBar';
 
 import { adaptationBus } from '@/utils/adaptationBus';
 import type { AdaptationEvent } from '@/types';
@@ -173,7 +174,7 @@ export const ReadPage: React.FC = () => {
     return () => window.removeEventListener("beforeunload", onUnload);
   }, []);
 
-  // Session restore
+  // Session restore — DOM-ready polling eliminates the 150ms race condition
   useEffect(() => {
     let cancelled = false;
 
@@ -205,18 +206,35 @@ export const ReadPage: React.FC = () => {
         useSessionStore.getState().setSessionStartTime(session.sessionStartTime);
       }
 
-      const scrollToSession = () => {
-        const el = document.querySelector(
-          `[data-paragraph-id="${session.lastParagraphId}"]`,
-        );
+      // Poll for DOM readiness instead of fixed delay — exponential backoff
+      const targetId = session.lastParagraphId;
+      const fallbackY = session.scrollY;
+      const delays = [50, 100, 200, 400, 500];
+      let attempt = 0;
+
+      const tryScroll = () => {
+        if (cancelled) return;
+        const el = targetId
+          ? document.querySelector(`[data-paragraph-id="${targetId}"]`)
+          : null;
         if (el) {
           el.scrollIntoView({ behavior: "instant", block: "start" });
+          return;
+        }
+        if (attempt < delays.length) {
+          setTimeout(tryScroll, delays[attempt++]);
         } else {
-          window.scrollTo({ top: session.scrollY, behavior: "instant" });
+          // All retries exhausted — fallback to raw scrollY
+          window.scrollTo({ top: fallbackY, behavior: "instant" });
         }
       };
 
-      setTimeout(scrollToSession, session.paragraphs?.length ? 200 : 0);
+      // If paragraphs were restored, wait for first render tick
+      if (session.paragraphs?.length) {
+        requestAnimationFrame(() => tryScroll());
+      } else {
+        tryScroll();
+      }
     }
 
     restore();
@@ -234,6 +252,7 @@ export const ReadPage: React.FC = () => {
       className="min-h-screen relative overflow-x-hidden"
       style={{ backgroundColor: 'var(--bg-color)' }}
     >
+      <ReadingProgressBar />
       <TelemetryOverlay />
       <ChromeShell>
         <TopNav />

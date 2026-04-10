@@ -82,13 +82,17 @@ export function useDynamicBrightness(): void {
         container.style.filter = `brightness(${brightness.toFixed(3)})`;
       }
 
-      // Update background color
-      if (brightness < 0.65) {
-        document.documentElement.style.setProperty('--bg-color', '#F5F0E4');
-      } else if (brightness < 0.75) {
-        document.documentElement.style.setProperty('--bg-color', '#FAF7F0');
-      } else {
-        document.documentElement.style.setProperty('--bg-color', '#FDFCF9');
+      // Update background color — shift toward warmer tones at low brightness
+      const isSepia = document.documentElement.classList.contains('sepia');
+      const isDark  = document.documentElement.classList.contains('dark');
+      if (!isDark && !isSepia) {
+        if (brightness < 0.65) {
+          document.documentElement.style.setProperty('--bg-color', 'var(--bg-secondary)');
+        } else if (brightness < 0.75) {
+          document.documentElement.style.setProperty('--bg-color', 'var(--bg-tertiary)');
+        } else {
+          document.documentElement.style.setProperty('--bg-color', 'var(--bg-primary)');
+        }
       }
 
       // Update debug overlay data attribute
@@ -108,7 +112,7 @@ export function useDynamicBrightness(): void {
       if (!state.brightnessAdapterEnabled) {
         const container = document.querySelector('.reading-container') as HTMLElement;
         if (container) container.style.filter = 'brightness(1.0)';
-        document.documentElement.style.setProperty('--bg-color', '#FDFCF9');
+        document.documentElement.style.setProperty('--bg-color', 'var(--bg-primary)');
       } else {
         applyBrightness();
       }

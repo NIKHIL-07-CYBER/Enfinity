@@ -14,8 +14,12 @@ Enfinity is a modern, distraction-free reading platform that uses a real-time **
   - **Dwell Time**: Accurate tracking of time spent per paragraph using `IntersectionObserver`.
   - **Regression Tracking**: Detection of "re-reading" behavior via upward scroll analysis.
   - **Hesitation Detection**: Identification of confusion via word-level mouse hesitation (>800ms).
-- **Local-First Persistence**: Robust session recovery and data logging using **Dexie.js (IndexedDB)**.
+- **Local-First Persistence**: Robust session recovery with **DOM-ready polling** (exponential backoff) and data logging using **Dexie.js (IndexedDB)**. State restoration is visually seamless -- paragraphs and scroll position are restored before the first paint flicker.
 - **Interactive Debug Overlay**: A live telemetry panel for developers and judges to see the engine's "brain" in action.
+- **Reading Progress Bar**: A minimal 2px bar at the viewport top tracking scroll progress.
+- **Estimated Reading Time**: Live "time remaining" badge in the navigation bar based on remaining words at 200 WPM.
+- **Focus Mode**: Toggle (Ctrl+Shift+F) dims all non-active paragraphs to 10% opacity for maximum immersion.
+- **Offline Indicator**: Service Worker-aware badge appears in the navigation when serving cached content.
 
 ## 📁 Project Structure
 
@@ -56,7 +60,7 @@ Struggle Signal Detected (CFS > 1.5)
 Enfinity implements a **Local-First** architecture to ensure zero data loss:
 - **Primary Storage**: `IndexedDB` (via Dexie.js) for telemetry, adaptations, and session state.
 - **Fallback**: `localStorage` during `beforeunload` events.
-- **Recovery**: Automatic "Multi-Layer Recovery" on hard refreshes, restoring scroll position within 150ms.
+- **Recovery**: Automatic "DOM-Ready Polling" on hard refreshes. Instead of a fixed delay, the system uses exponential backoff (50ms, 100ms, 200ms, 400ms, 500ms) to poll for rendered paragraph elements before restoring scroll position. This eliminates race conditions and ensures visually seamless restoration every time.
 
 ## 🛠️ Tech Stack
 
@@ -64,7 +68,7 @@ Enfinity implements a **Local-First** architecture to ensure zero data loss:
 - **State Management**: Zustand
 - **Persistence**: Dexie.js (IndexedDB)
 - **NLP**: compromise.js, Dale-Chall 3,000 list
-- **Backend**: Express, LibreTranslate (Docker-ready), MyMemory API
+- **Backend**: Express, LibreTranslate (Docker-ready), MyMemory API, Race Strategy (`Promise.any`)
 - **Testing**: Vitest, Custom MJS verification scripts
 
 ## ⌨️ Telemetry Engine (CFS)

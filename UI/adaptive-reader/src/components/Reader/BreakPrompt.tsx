@@ -23,7 +23,7 @@ export const BreakPrompt: React.FC<BreakPromptProps> = ({ isVisible, onDismiss }
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 20, opacity: 0 }}
-          className="fixed bottom-6 right-6 z-50 pointer-events-auto flex items-start gap-4"
+          className="fixed bottom-6 left-6 z-50 pointer-events-auto flex items-start gap-4 max-w-[calc(100vw-48px)]"
           style={{
             backgroundColor: 'var(--toast-bg)',
             color: 'var(--toolbar-on-accent)',
