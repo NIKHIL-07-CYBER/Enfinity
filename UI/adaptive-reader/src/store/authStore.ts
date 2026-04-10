@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
-import type { User } from '@supabase/supabase-js';
-import { syncToSupabase, loadFromSupabase } from '@/utils/syncService';
+// Updated to relative path to ensure module resolution
+import { supabase } from '../lib/supabase'; 
+import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
+import { syncToSupabase, loadFromSupabase } from '../utils/syncService';
 
 export interface AuthState {
   user: User | null;
@@ -42,7 +43,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     if (!listenerReady) {
       listenerReady = true;
-      supabase.auth.onAuthStateChange(async (event, session) => {
+      // FIX: Explicitly typed parameters 'event' and 'session' to resolve TS7006
+      supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
         if (event === 'SIGNED_IN' && session?.user) {
           const user = session.user as User;
           set({ user, isLoggedIn: true });
@@ -71,7 +73,6 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signUpWithEmail: async (email, password) => {
     const { data, error } = await supabase.auth.signUp({ email, password });
-    // Note: User is not logged in until email is confirmed
     return { error: error?.message ?? null };
   },
 
