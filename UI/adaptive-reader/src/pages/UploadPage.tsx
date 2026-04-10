@@ -62,7 +62,7 @@ export const UploadPage: React.FC = () => {
     
     // Verification: Ensure paragraphs exist before accessing ID 
     const firstParaId = doc.paragraphs && doc.paragraphs.length > 0 
-      ? doc.paragraphs.id 
+      ? doc.paragraphs[0].id 
       : '';
 
     void saveSession({
@@ -94,10 +94,11 @@ export const UploadPage: React.FC = () => {
         id: `temp-${Date.now()}`,
         title: title || text.slice(0, 30) + "...",
         content: text,
-        userId: user?.id || 'anonymous',
         createdAt: new Date().toISOString(),
         wordCount: text.split(/\s+/).length,
         paragraphCount: paragraphs.length,
+        summaryStartParagraph: 0,
+        summaryEndParagraph: -1,
         paragraphs: paragraphs
       };
 
@@ -106,7 +107,7 @@ export const UploadPage: React.FC = () => {
       useSessionStore.getState().setSessionStartTime(sessionStartTime);
       
       void saveSession({
-        lastParagraphId: paragraphs?.id || '',
+        lastParagraphId: paragraphs[0]?.id || '',
         scrollY: 0,
         appliedAdaptations: [],
         sessionStartTime,

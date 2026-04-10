@@ -192,7 +192,7 @@ export const ReadPage: React.FC = () => {
     };
   }, []);
 
-  const saveDebounceRef = useRef<number>();
+  const saveDebounceRef = useRef<number | undefined>(undefined);
   useEffect(() => {
     const onScroll = () => {
       clearTimeout(saveDebounceRef.current);

@@ -64,7 +64,7 @@ export function useReadingAnalytics() {
         .from('reading_analytics')
         .select('*')
         .eq('user_id', user.id)
-        .gte('date', since.toISOString().split('T'));
+        .gte('date', since.toISOString().split('T')[0]);
 
       if (cancelled) return;
 
@@ -113,7 +113,7 @@ export function useReadingAnalytics() {
       for (let i = 0; i < 60; i++) {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
-        const key = d.toISOString().split('T');
+        const key = d.toISOString().split('T')[0];
         if (dates.includes(key)) streak++;
         else if (i === 0) continue;
         else break;
