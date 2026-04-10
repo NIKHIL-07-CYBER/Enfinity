@@ -1,6 +1,6 @@
 // DONE: Task 1-9 — ReadPage integrating all new features + Cognate Indicator + Zero-Chrome
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useSpring } from 'framer-motion'; // Added hooks for Progress Bar
+import { motion, useScroll, useSpring } from 'framer-motion'; 
 import { TopNav } from '@/components/Layout/TopNav';
 import { SidebarNav } from '@/components/Layout/SidebarNav';
 import { ReadingContainer } from '@/components/Reader/ReadingContainer';
@@ -43,10 +43,6 @@ import { endReadingSession } from '@/utils/endReadingSession';
 import { SummaryPanel } from '@/components/Document/SummaryPanel';
 import { useDocumentStore } from '@/store/documentStore';
 
-/**
- * Task 2: Reading Progress Bar Component
- * Resolves "Cannot find name 'ReadingProgressBar'"
- */
 const ReadingProgressBar: React.FC = () => {
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
@@ -76,14 +72,12 @@ export const ReadPage: React.FC = () => {
   const summaryDrawerOpen = useUIStore((s) => s.summaryDrawerOpen);
   const setSummaryDrawerOpen = useUIStore((s) => s.setSummaryDrawerOpen);
   const currentDocument = useDocumentStore((s) => s.currentDocument);
-
-  // --- Telemetry hooks ---
+  
   useTelemetryResume();
   useRegressionTracker();
   useParagraphDwell(paragraphs);
   useHighlightHesitation();
 
-  // --- Logic hooks ---
   useActiveParagraph(paragraphs);
   useTextSelection();
   useUIVisibility();
@@ -92,12 +86,10 @@ export const ReadPage: React.FC = () => {
   useManualMode();
   useDocumentPersistence();
 
-  // Eye strain schedule
   useEyeStrainSchedule({
     onBreakDue: () => setShowBreak(true)
   });
 
-  // Chatbot context
   const activeParagraphId = useTelemetryStore(s => s.activeParagraphId);
   useEffect(() => {
     if (activeParagraphId) {
@@ -105,7 +97,6 @@ export const ReadPage: React.FC = () => {
     }
   }, [activeParagraphId]);
 
-  // Burst cleanup
   useEffect(() => {
     if (burstActive) {
       const timer = setTimeout(() => {
@@ -115,7 +106,6 @@ export const ReadPage: React.FC = () => {
     }
   }, [burstActive]);
 
-  // Focus mode toggle
   useEffect(() => {
     if (focusMode) {
       document.documentElement.classList.add('focus-mode-active');
@@ -125,7 +115,6 @@ export const ReadPage: React.FC = () => {
     };
   }, [focusMode]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
@@ -143,7 +132,6 @@ export const ReadPage: React.FC = () => {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  // Fullscreen sync
   useEffect(() => {
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement && useUIStore.getState().zeroChrome) {
@@ -154,7 +142,6 @@ export const ReadPage: React.FC = () => {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Cursor auto-hide
   useEffect(() => {
     if (!zeroChrome) {
       document.documentElement.classList.remove('cursor-hidden');
@@ -187,7 +174,6 @@ export const ReadPage: React.FC = () => {
     };
   }, []);
 
-  // ARIA adaptation announcer
   useEffect(() => {
     const handler = (event: AdaptationEvent) => {
       const el = document.getElementById("adaptation-announcer");
@@ -206,7 +192,6 @@ export const ReadPage: React.FC = () => {
     };
   }, []);
 
-  // Session persistence (Debounced Scroll)
   const saveDebounceRef = useRef<number>();
   useEffect(() => {
     const onScroll = () => {
@@ -227,7 +212,6 @@ export const ReadPage: React.FC = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Unload persistence
   useEffect(() => {
     const onUnload = () => {
       const activeParagraphId = useTelemetryStore.getState().activeParagraphId;
@@ -238,7 +222,6 @@ export const ReadPage: React.FC = () => {
     return () => window.removeEventListener("beforeunload", onUnload);
   }, []);
 
-  // Session restore - Polling logic
   useEffect(() => {
     let cancelled = false;
     async function restore() {
@@ -253,7 +236,7 @@ export const ReadPage: React.FC = () => {
             scrollY: Number(lastY) || 0,
             appliedAdaptations: [],
             sessionStartTime: Date.now(),
-            paragraphs: useSessionStore.getState().paragraphs // Added fallback
+            paragraphs: useSessionStore.getState().paragraphs 
           };
         }
       }
@@ -262,6 +245,7 @@ export const ReadPage: React.FC = () => {
       if (session.paragraphs?.length) {
         useSessionStore.getState().setParagraphs(session.paragraphs);
         syncParagraphsToNlp(session.paragraphs);
+        // FIX: Access paragraphs to get the text of the first paragraph 
         const title = session.paragraphs?.text?.split('\n') || 'Untitled';
         localStorage.setItem('last_article_title', title);
       }
@@ -337,7 +321,6 @@ export const ReadPage: React.FC = () => {
 
       <BreakPrompt isVisible={showBreak} onDismiss={() => setShowBreak(false)} />
 
-      {/* ARIA Announcer */}
       <div
         aria-live="polite"
         aria-atomic="true"
@@ -346,7 +329,6 @@ export const ReadPage: React.FC = () => {
         style={{ position: "absolute", left: "-9999px" }}
       />
 
-      {/* Summary Drawer */}
       {summaryDrawerOpen && (
         <>
           <div

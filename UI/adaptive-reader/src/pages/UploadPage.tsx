@@ -11,7 +11,7 @@ import { useSessionStore } from '@/store/sessionStore';
 // Ensure this utility is correctly imported and returns Promise<Paragraph[]>
 import { parseFile } from '@/utils/paragraphUtils'; 
 import { SummaryPanel } from '@/components/Document/SummaryPanel';
-import { Paragraph } from '@/types'; // Import the shared interface
+import type { Paragraph } from '@/types';
 
 export const UploadPage: React.FC = () => {
   const navigate = useNavigate();
@@ -106,7 +106,7 @@ export const UploadPage: React.FC = () => {
       useSessionStore.getState().setSessionStartTime(sessionStartTime);
       
       void saveSession({
-        lastParagraphId: paragraphs.id,
+        lastParagraphId: paragraphs?.id || '',
         scrollY: 0,
         appliedAdaptations: [],
         sessionStartTime,
