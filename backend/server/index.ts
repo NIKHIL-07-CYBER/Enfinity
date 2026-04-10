@@ -59,7 +59,7 @@ function wrapError(message: string) {
 }
 
 app.get('/api/health', (req, res) => {
-  res.json(wrapSuccess({ status: 'ok' }));
+  res.status(200).json(wrapSuccess({ status: 'ok', timestamp: new Date().toISOString() }));
 });
 
 let useFallbackPriority = false;
@@ -214,6 +214,18 @@ Be concise (under 120 words). Use simple language. If they ask about a specific 
 registerDocumentRoutes(app);
 registerSummarizeRoutes(app);
 
-app.listen(PORT, () => {
-  console.warn(`Express Proxy Server listening on port ${PORT}`);
+// Graceful error handling for unhandled errors
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('[ERROR]', err);
+  res.status(500).json(wrapError(err.message || 'Internal server error'));
+});
+
+const PORT_NUM = parseInt(process.env.PORT || '3001', 10);
+app.listen(PORT_NUM, '0.0.0.0', () => {
+  console.log(`✓ Express Proxy Server listening on port ${PORT_NUM}`);
+  console.log(`✓ Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+  console.log(`✓ LibreTranslate URL: ${process.env.LIBRE_TRANSLATE_URL || 'http://localhost:5000/translate'}`);
+}).on('error', (err: any) => {
+  console.error('[FATAL] Failed to start server:', err);
+  process.exit(1);
 });

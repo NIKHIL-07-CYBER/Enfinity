@@ -9,9 +9,8 @@ healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
 
 [env]
-# Set environment variables for your application
+# Railway will automatically set PORT to a dynamic port
+# Make sure your app listens on the PORT environment variable
 PORT = "3001"
 FRONTEND_URL = "https://adaptive-reader.vercel.app"
 LIBRE_TRANSLATE_URL = "http://localhost:5000/translate"
-# Add your API keys here if needed
-# ANTHROPIC_API_KEY = ""
