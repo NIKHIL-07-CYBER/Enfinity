@@ -1,6 +1,6 @@
 // DONE: Task 1-9 — ReadPage integrating all new features + Cognate Indicator + Zero-Chrome
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useSpring } from 'framer-motion'; // Added hooks for Progress Bar
 import { TopNav } from '@/components/Layout/TopNav';
 import { SidebarNav } from '@/components/Layout/SidebarNav';
 import { ReadingContainer } from '@/components/Reader/ReadingContainer';
@@ -43,6 +43,30 @@ import { endReadingSession } from '@/utils/endReadingSession';
 import { SummaryPanel } from '@/components/Document/SummaryPanel';
 import { useDocumentStore } from '@/store/documentStore';
 
+/**
+ * Task 2: Reading Progress Bar Component
+ * Resolves "Cannot find name 'ReadingProgressBar'"
+ */
+const ReadingProgressBar: React.FC = () => {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
+  return (
+    <motion.div
+      className="fixed top-0 left-0 right-0 h-[3px] z- origin-left"
+      style={{ 
+        scaleX, 
+        backgroundColor: 'var(--accent-blue)',
+        boxShadow: '0 0 8px var(--accent-blue)' 
+      }}
+    />
+  );
+};
+
 export const ReadPage: React.FC = () => {
   const paragraphs = useSessionStore(s => s.paragraphs);
   const [showBreak, setShowBreak] = useState(false);
@@ -59,7 +83,7 @@ export const ReadPage: React.FC = () => {
   useParagraphDwell(paragraphs);
   useHighlightHesitation();
 
-  // --- New hooks (Tasks 2, 3, 6, 8) ---
+  // --- Logic hooks ---
   useActiveParagraph(paragraphs);
   useTextSelection();
   useUIVisibility();
@@ -73,7 +97,7 @@ export const ReadPage: React.FC = () => {
     onBreakDue: () => setShowBreak(true)
   });
 
-  // Context awareness for chatbot (Task 5f)
+  // Chatbot context
   const activeParagraphId = useTelemetryStore(s => s.activeParagraphId);
   useEffect(() => {
     if (activeParagraphId) {
@@ -81,7 +105,7 @@ export const ReadPage: React.FC = () => {
     }
   }, [activeParagraphId]);
 
-  // Burst cleanup (Task 6)
+  // Burst cleanup
   useEffect(() => {
     if (burstActive) {
       const timer = setTimeout(() => {
@@ -91,7 +115,7 @@ export const ReadPage: React.FC = () => {
     }
   }, [burstActive]);
 
-  // Focus mode init on mount (Task 7)
+  // Focus mode toggle
   useEffect(() => {
     if (focusMode) {
       document.documentElement.classList.add('focus-mode-active');
@@ -101,29 +125,25 @@ export const ReadPage: React.FC = () => {
     };
   }, [focusMode]);
 
-  // Keyboard shortcut: Ctrl+Shift+F for focus mode (Task 7e)
+  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
         e.preventDefault();
-        if (useUIStore.getState().zeroChrome) {
-          useUIStore.getState().exitZeroChrome();
-        } else {
-          useUIStore.getState().enterZeroChrome();
-        }
+        const ui = useUIStore.getState();
+        ui.zeroChrome ? ui.exitZeroChrome() : ui.enterZeroChrome();
       }
       if (e.key === 'Escape') {
-        if (useUIStore.getState().zeroChrome) {
-          useUIStore.getState().exitZeroChrome();
-        }
-        useUIStore.getState().setSummaryDrawerOpen(false);
+        const ui = useUIStore.getState();
+        if (ui.zeroChrome) ui.exitZeroChrome();
+        ui.setSummaryDrawerOpen(false);
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  // Sync zero-chrome state with native fullscreen exit (Esc key exits fullscreen)
+  // Fullscreen sync
   useEffect(() => {
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement && useUIStore.getState().zeroChrome) {
@@ -134,34 +154,29 @@ export const ReadPage: React.FC = () => {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Zero-chrome cursor auto-hide: hide cursor after 3s of no movement
+  // Cursor auto-hide
   useEffect(() => {
     if (!zeroChrome) {
       document.documentElement.classList.remove('cursor-hidden');
       return;
     }
-
-    let cursorTimer: number | undefined;
-
+    let cursorTimer: number;
     const handleMouseMove = () => {
       document.documentElement.classList.remove('cursor-hidden');
-      if (cursorTimer) clearTimeout(cursorTimer);
+      clearTimeout(cursorTimer);
       cursorTimer = window.setTimeout(() => {
         if (useUIStore.getState().zeroChrome) {
           document.documentElement.classList.add('cursor-hidden');
         }
       }, 3000);
     };
-
-    // Initial hide after 3s
     cursorTimer = window.setTimeout(() => {
       document.documentElement.classList.add('cursor-hidden');
     }, 3000);
-
     window.addEventListener('mousemove', handleMouseMove);
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      if (cursorTimer) clearTimeout(cursorTimer);
+      clearTimeout(cursorTimer);
       document.documentElement.classList.remove('cursor-hidden');
     };
   }, [zeroChrome]);
@@ -172,7 +187,7 @@ export const ReadPage: React.FC = () => {
     };
   }, []);
 
-  // Adaptation announcer
+  // ARIA adaptation announcer
   useEffect(() => {
     const handler = (event: AdaptationEvent) => {
       const el = document.getElementById("adaptation-announcer");
@@ -191,13 +206,11 @@ export const ReadPage: React.FC = () => {
     };
   }, []);
 
-  // Session save on scroll
-  const saveDebounceRef = useRef<number | undefined>(undefined);
+  // Session persistence (Debounced Scroll)
+  const saveDebounceRef = useRef<number>();
   useEffect(() => {
     const onScroll = () => {
-      if (saveDebounceRef.current !== undefined) {
-        clearTimeout(saveDebounceRef.current);
-      }
+      clearTimeout(saveDebounceRef.current);
       saveDebounceRef.current = window.setTimeout(() => {
         const activeParagraphId = useTelemetryStore.getState().activeParagraphId;
         const sessionStartTime = useSessionStore.getState().sessionStartTime ?? Date.now();
@@ -214,7 +227,7 @@ export const ReadPage: React.FC = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Before unload save
+  // Unload persistence
   useEffect(() => {
     const onUnload = () => {
       const activeParagraphId = useTelemetryStore.getState().activeParagraphId;
@@ -225,10 +238,9 @@ export const ReadPage: React.FC = () => {
     return () => window.removeEventListener("beforeunload", onUnload);
   }, []);
 
-  // Session restore — DOM-ready polling eliminates the 150ms race condition
+  // Session restore - Polling logic
   useEffect(() => {
     let cancelled = false;
-
     async function restore() {
       let session = await loadSession().catch(() => null);
       if (!session) {
@@ -241,6 +253,7 @@ export const ReadPage: React.FC = () => {
             scrollY: Number(lastY) || 0,
             appliedAdaptations: [],
             sessionStartTime: Date.now(),
+            paragraphs: useSessionStore.getState().paragraphs // Added fallback
           };
         }
       }
@@ -249,25 +262,22 @@ export const ReadPage: React.FC = () => {
       if (session.paragraphs?.length) {
         useSessionStore.getState().setParagraphs(session.paragraphs);
         syncParagraphsToNlp(session.paragraphs);
-        // Save article title for chatbot context
-        const title = session.paragraphs[0]?.text?.split('\n')[0] || 'Untitled';
+        const title = session.paragraphs?.text?.split('\n') || 'Untitled';
         localStorage.setItem('last_article_title', title);
       }
+      
       if (session.sessionStartTime) {
         useSessionStore.getState().setSessionStartTime(session.sessionStartTime);
       }
 
-      // Poll for DOM readiness instead of fixed delay — exponential backoff
       const targetId = session.lastParagraphId;
       const fallbackY = session.scrollY;
-      const delays = [50, 100, 200, 400, 500];
+      const delays = [50];
       let attempt = 0;
 
       const tryScroll = () => {
         if (cancelled) return;
-        const el = targetId
-          ? document.querySelector(`[data-paragraph-id="${targetId}"]`)
-          : null;
+        const el = targetId ? document.querySelector(`[data-paragraph-id="${targetId}"]`) : null;
         if (el) {
           el.scrollIntoView({ behavior: "instant", block: "start" });
           return;
@@ -275,23 +285,18 @@ export const ReadPage: React.FC = () => {
         if (attempt < delays.length) {
           setTimeout(tryScroll, delays[attempt++]);
         } else {
-          // All retries exhausted — fallback to raw scrollY
           window.scrollTo({ top: fallbackY, behavior: "instant" });
         }
       };
 
-      // If paragraphs were restored, wait for first render tick
       if (session.paragraphs?.length) {
         requestAnimationFrame(() => tryScroll());
       } else {
         tryScroll();
       }
     }
-
     restore();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   return (
@@ -305,84 +310,59 @@ export const ReadPage: React.FC = () => {
     >
       <ReadingProgressBar />
       <TelemetryOverlay />
+      
       <ChromeShell>
         <TopNav />
       </ChromeShell>
+      
       <SidebarNav activePage="reader" />
       
       <main
-        className={`pb-32 w-full relative ${
-          zeroChrome
-            ? 'pl-0 pt-12'
-            : 'pl-[160px] pt-24 sm:pl-[160px] max-sm:pl-0'
+        className={`pb-32 w-full relative transition-[padding] duration-500 ease-in-out ${
+          zeroChrome ? 'pl-0 pt-12' : 'pl-[160px] pt-24 sm:pl-[160px] max-sm:pl-0'
         }`}
-        style={{
-          transition: 'padding 500ms ease-in-out',
-        }}
       >
         <ReadingContainer />
         <PermissionModePanel />
       </main>
 
-      {/* Task 2c: Active paragraph indicator */}
       <ActiveParagraphBox />
-
-      {/* Task 3c: Selection toolbar */}
       <SelectionToolbar />
       <ManualHoverBox />
       <EyeStrainControl />
-
-      {/* Cognate Indicator */}
       <CognateIndicator />
-
-      {/* Task 5: Chatbot */}
       <ChatbotAvatar />
       <ChatbotPanel />
-
-      {/* Task 7: Focus mode button */}
       <FocusModeButton />
 
-      {/* Break prompt */}
       <BreakPrompt isVisible={showBreak} onDismiss={() => setShowBreak(false)} />
 
+      {/* ARIA Announcer */}
       <div
         aria-live="polite"
         aria-atomic="true"
         id="adaptation-announcer"
-        style={{
-          position: "absolute",
-          left: "-9999px",
-          width: "1px",
-          height: "1px",
-          overflow: "hidden",
-        }}
+        className="sr-only"
+        style={{ position: "absolute", left: "-9999px" }}
       />
 
+      {/* Summary Drawer */}
       {summaryDrawerOpen && (
         <>
-          <button
-            type="button"
-            className="summary-drawer fixed inset-0 z-[8500] border-none cursor-default"
-            style={{
-              background: 'color-mix(in srgb, var(--text-primary) 50%, transparent)',
-            }}
-            aria-label="Close summary"
+          <div
+            className="fixed inset-0 z- cursor-default"
+            style={{ background: 'color-mix(in srgb, var(--text-primary) 50%, transparent)' }}
             onClick={() => setSummaryDrawerOpen(false)}
           />
           <aside
-            className="summary-drawer fixed right-0 top-0 z-[8600] h-full w-[300px] overflow-y-auto border-l p-4 shadow-xl"
-            style={{
-              background: 'var(--bg-secondary)',
-              borderColor: 'var(--border-color)',
-            }}
+            className="fixed right-0 top-0 z- h-full w-[300px] overflow-y-auto border-l p-4 shadow-xl"
+            style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}
           >
             <div className="flex justify-between items-center mb-3">
-              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
-                Summary
-              </span>
+              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>Summary</span>
               <button
                 type="button"
-                className="text-lg leading-none bg-transparent border-none cursor-pointer"
+                className="text-2xl bg-transparent border-none cursor-pointer"
                 style={{ color: 'var(--text-secondary)' }}
                 onClick={() => setSummaryDrawerOpen(false)}
               >
