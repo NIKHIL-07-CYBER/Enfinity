@@ -1,5 +1,9 @@
--- Enfinity / Adaptive Reader — Supabase schema (run in SQL editor)
+-- ═══════════════════════════════════════════════════════════════════
+-- Enfinity Adaptive Reader — Supabase Schema
+-- Run this in the Supabase SQL Editor to set up all tables and RLS.
+-- ═══════════════════════════════════════════════════════════════════
 
+-- Reading sessions: tracks each reading session with duration, speed, etc.
 CREATE TABLE IF NOT EXISTS reading_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -16,6 +20,7 @@ CREATE TABLE IF NOT EXISTS reading_sessions (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- User documents: stores uploaded documents for cross-device sync
 CREATE TABLE IF NOT EXISTS user_documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -27,16 +32,15 @@ CREATE TABLE IF NOT EXISTS user_documents (
   summary TEXT,
   summary_start_paragraph INTEGER DEFAULT 0,
   summary_end_paragraph INTEGER DEFAULT -1,
-  last_paragraph_id TEXT,
-  scroll_y INTEGER DEFAULT 0,
-  last_read_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT now()
+  created_at TIMESTAMPTZ DEFAULT now(),
+  last_read_at TIMESTAMPTZ
 );
 
+-- User highlights: saved selections, annotations, and notes
 CREATE TABLE IF NOT EXISTS user_highlights (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  document_id UUID REFERENCES user_documents(id) ON DELETE SET NULL,
+  document_id UUID REFERENCES user_documents(id) ON DELETE CASCADE,
   paragraph_id TEXT NOT NULL,
   word_index INTEGER,
   original_text TEXT NOT NULL,
@@ -49,51 +53,60 @@ CREATE TABLE IF NOT EXISTS user_highlights (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- Reading analytics: daily aggregated reading metrics
 CREATE TABLE IF NOT EXISTS reading_analytics (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  session_id UUID REFERENCES reading_sessions(id) ON DELETE SET NULL,
+  session_id UUID REFERENCES reading_sessions(id) ON DELETE CASCADE,
   date DATE NOT NULL,
   minutes_read INTEGER DEFAULT 0,
   words_read INTEGER DEFAULT 0,
   avg_wpm REAL DEFAULT 0,
   cfs_avg REAL DEFAULT 0,
-  paragraphs_completed INTEGER DEFAULT 0,
-  UNIQUE (user_id, date)
+  paragraphs_completed INTEGER DEFAULT 0
 );
+
+-- ═══════════════════════════════════════════════════════════════════
+-- Row Level Security — each user can only access their own data
+-- ═══════════════════════════════════════════════════════════════════
 
 ALTER TABLE reading_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_highlights ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reading_analytics ENABLE ROW LEVEL SECURITY;
 
--- Drop old policies if they exist (safe to re-run)
-DROP POLICY IF EXISTS "Users see own data" ON reading_sessions;
-DROP POLICY IF EXISTS "Users see own data" ON user_documents;
-DROP POLICY IF EXISTS "Users see own data" ON user_highlights;
-DROP POLICY IF EXISTS "Users see own data" ON reading_analytics;
+-- Policies: users see and manage only their own rows
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users see own sessions') THEN
+    CREATE POLICY "Users see own sessions" ON reading_sessions
+      FOR ALL USING (auth.uid() = user_id);
+  END IF;
 
--- reading_sessions
-CREATE POLICY "reading_sessions_select" ON reading_sessions FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "reading_sessions_insert" ON reading_sessions FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "reading_sessions_update" ON reading_sessions FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "reading_sessions_delete" ON reading_sessions FOR DELETE USING (auth.uid() = user_id);
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users see own documents') THEN
+    CREATE POLICY "Users see own documents" ON user_documents
+      FOR ALL USING (auth.uid() = user_id);
+  END IF;
 
--- user_documents
-CREATE POLICY "user_documents_select" ON user_documents FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "user_documents_insert" ON user_documents FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "user_documents_update" ON user_documents FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "user_documents_delete" ON user_documents FOR DELETE USING (auth.uid() = user_id);
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users see own highlights') THEN
+    CREATE POLICY "Users see own highlights" ON user_highlights
+      FOR ALL USING (auth.uid() = user_id);
+  END IF;
 
--- user_highlights
-CREATE POLICY "user_highlights_select" ON user_highlights FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "user_highlights_insert" ON user_highlights FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "user_highlights_update" ON user_highlights FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "user_highlights_delete" ON user_highlights FOR DELETE USING (auth.uid() = user_id);
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users see own analytics') THEN
+    CREATE POLICY "Users see own analytics" ON reading_analytics
+      FOR ALL USING (auth.uid() = user_id);
+  END IF;
+END
+$$;
 
--- reading_analytics
-CREATE POLICY "reading_analytics_select" ON reading_analytics FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "reading_analytics_insert" ON reading_analytics FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "reading_analytics_update" ON reading_analytics FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "reading_analytics_delete" ON reading_analytics FOR DELETE USING (auth.uid() = user_id);
+-- ═══════════════════════════════════════════════════════════════════
+-- Indexes for performance
+-- ═══════════════════════════════════════════════════════════════════
 
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON reading_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_created ON reading_sessions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_documents_user ON user_documents(user_id);
+CREATE INDEX IF NOT EXISTS idx_highlights_user ON user_highlights(user_id);
+CREATE INDEX IF NOT EXISTS idx_highlights_doc ON user_highlights(document_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_user_date ON reading_analytics(user_id, date DESC);

@@ -1,8 +1,8 @@
 // DONE: Task 3a — Selection store + Task 2a action panel state
 import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
-import { useAuthStore } from '@/store/authStore';
-import { useDocumentStore } from '@/store/documentStore';
+import { supabase } from '../lib/supabase';
+import { useAuthStore } from './authStore';
+import { useDocumentStore } from './documentStore';
 
 export interface SelectionEntry {
   id: string;

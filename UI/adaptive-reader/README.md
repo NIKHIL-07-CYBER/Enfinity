@@ -1,4 +1,4 @@
-# Distraction-Free Adaptive Reader
+# Briefly — Distraction-Free Adaptive Reader
 
 > An EdTech reading environment that eliminates distraction, tracks comprehension
 > implicitly, and adapts text difficulty in real time.
@@ -47,7 +47,7 @@
 | NLP (client) | compromise.js | Zero-dependency browser NLP |
 | File parsing | marked.js | MD/TXT stripping |
 | Translation | LibreTranslate (Docker) + MyMemory | Privacy-first, fallback chain |
-| AI Chat | Anthropic Claude Haiku | Fast, cost-efficient |
+| AI Chat | Google Gemini 2.5 Flash | Fast, contextual, scalable |
 | Backend | Express + Node.js | Lightweight proxy layer |
 | Deployment | Vercel (frontend) + Railway (backend) | Free tier, instant deploy |
 
@@ -56,7 +56,7 @@
 ### Prerequisites
 - Node.js 18+
 - Docker (for LibreTranslate)
-- Anthropic API key (for chatbot — optional, stub responses if not set)
+- Google AI API key (for chatbot and summarization — optional, stub responses if not set)
 
 ### Setup
 ```bash
@@ -66,7 +66,7 @@ docker run -d -p 5000:5000 libretranslate/libretranslate
 # 2. Start backend
 cd backend/server
 cp .env.example .env
-# Add ANTHROPIC_API_KEY to .env (optional)
+# Add GOOGLE_AI_API_KEY to .env (optional)
 npm install
 npm run start  # runs on :3001
 
@@ -76,10 +76,10 @@ npm install
 npm run dev  # runs on :5173
 ```
 
-### Environment variables (server/.env)
+### Environment variables (backend/.env)
 ```
 PORT=3001
-ANTHROPIC_API_KEY=sk-ant-...   # Optional — chatbot returns stub without it
+GOOGLE_AI_API_KEY=AIzaSy...   # Optional — chatbot returns stub without it
 FRONTEND_URL=http://localhost:5173
 ```
 
@@ -92,7 +92,7 @@ FRONTEND_URL=http://localhost:5173
 ## Architecture
 
 ```
-Enfinity/
+Briefly/
 ├── UI/adaptive-reader/      # React frontend (Vite + TypeScript)
 │   ├── src/
 │   │   ├── components/      # Reader, Layout, Selection, Chatbot, Upload, Review

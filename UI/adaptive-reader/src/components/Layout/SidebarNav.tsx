@@ -1,4 +1,4 @@
-// DONE: Task 1 — Fix sidebar nav links
+// Sidebar — refined editorial with hover states and subtle transitions
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
@@ -17,30 +17,61 @@ export const SidebarNav: React.FC<{ activePage: 'reader' | 'outline' | 'annotate
 
   return (
     <div 
-      className="chrome-shell fixed left-0 top-0 h-full flex flex-col px-4 py-8 pt-24 max-sm:hidden"
-      style={{ backgroundColor: 'var(--sidebar-bg)', width: '160px', zIndex: 40 }}
+      className="chrome-shell fixed left-0 top-0 h-full flex flex-col px-3 py-6 pt-20 max-sm:hidden"
+      style={{
+        backgroundColor: 'var(--sidebar-bg)',
+        width: '160px',
+        zIndex: 40,
+        borderRight: '1px solid var(--border-color)',
+      }}
     >
-      <div className="mb-10 pl-2">
-        <div className="text-[10px] tracking-widest font-bold mb-2 uppercase" style={{ color: 'var(--nav-text)' }}>CURRENT CHAPTER</div>
-        <div className="font-bold text-lg leading-tight" style={{ color: 'var(--text-color)' }}>Biological<br/>Editorial</div>
+      {/* Chapter info */}
+      <div className="mb-8 px-2">
+        <div
+          className="text-[9px] tracking-[0.15em] font-semibold mb-2 uppercase"
+          style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-ui)' }}
+        >
+          CURRENT CHAPTER
+        </div>
+        <div
+          className="font-bold text-base leading-tight"
+          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-ui)' }}
+        >
+          Biological<br/>Editorial
+        </div>
       </div>
 
-      <nav className="flex-1 flex flex-col space-y-6 mt-4">
+      {/* Nav items */}
+      <nav className="flex-1 flex flex-col gap-1 mt-2">
         {navItems.map((item) => {
           const isActive = activePage === item.id;
           return (
             <Link 
               key={item.id} 
               to={item.route}
-              className="flex flex-col items-start px-2 py-2 w-full transition-colors"
-              style={{ color: isActive ? 'var(--accent-blue)' : 'var(--nav-text)' }}
-              onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.color = 'var(--accent-blue)'; }}
-              onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.color = 'var(--nav-text)'; }}
+              className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl transition-all"
+              style={{
+                color: isActive ? 'var(--accent-blue)' : 'var(--text-secondary)',
+                background: isActive ? 'var(--accent-blue-bg)' : 'transparent',
+                fontFamily: 'var(--font-ui)',
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.background = 'var(--accent-blue-bg)';
+                  e.currentTarget.style.color = 'var(--accent-blue)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
+                }
+              }}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 mb-2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0">
                 {item.icon}
               </svg>
-              <span className={`text-[11px] tracking-widest ${isActive ? 'font-bold' : 'font-medium'}`}>
+              <span className={`text-[10px] tracking-[0.12em] ${isActive ? 'font-bold' : 'font-medium'}`}>
                 {item.label}
               </span>
             </Link>
@@ -48,43 +79,50 @@ export const SidebarNav: React.FC<{ activePage: 'reader' | 'outline' | 'annotate
         })}
       </nav>
 
-      {/* Adaptation toggle (Task 4c) */}
-      <div className="mb-4 pl-2">
+      {/* Adaptation toggle */}
+      <div className="mb-2 px-1">
         <button
           onClick={toggleAdaptation}
           title={adaptationEnabled ? 'Auto-adapt: ON' : 'Auto-adapt: OFF'}
-          className="flex flex-col items-start py-2 transition-colors w-full"
+          className="flex items-center gap-3 py-2.5 px-3 transition-all w-full rounded-xl"
           style={{
             color: adaptationEnabled ? 'var(--accent-blue)' : 'var(--text-secondary)',
             background: adaptationEnabled ? 'var(--accent-blue-bg)' : 'transparent',
-            borderRadius: '8px',
-            padding: '8px',
             border: 'none',
             cursor: 'pointer',
+            fontFamily: 'var(--font-ui)',
           }}
         >
           <span style={{
-            fontSize: '14px',
+            fontSize: '13px',
             textDecoration: adaptationEnabled ? 'none' : 'line-through',
+            fontWeight: 600,
           }}>Aa→</span>
-          <span className="text-[9px] tracking-widest font-medium mt-1">
+          <span className="text-[10px] tracking-[0.12em] font-medium">
             {adaptationEnabled ? 'ADAPT' : 'OFF'}
           </span>
         </button>
       </div>
 
-      <div className="mt-auto pl-2">
+      {/* Archive link */}
+      <div className="mt-auto px-1">
         <Link 
           to={ROUTES.archive}
-          className="flex flex-col items-start py-2 transition-colors"
-          style={{ color: 'var(--nav-text)' }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-blue)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--nav-text)'}
+          className="flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all"
+          style={{ color: 'var(--nav-text)', fontFamily: 'var(--font-ui)' }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--accent-blue)';
+            e.currentTarget.style.background = 'var(--accent-blue-bg)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--nav-text)';
+            e.currentTarget.style.background = 'transparent';
+          }}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 mb-2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0">
             <path d="M21 8v13H3V8" /><path d="M1 3h22v5H1z" /><path d="M10 12h4" />
           </svg>
-          <span className="text-[11px] tracking-widest font-medium uppercase">ARCHIVE</span>
+          <span className="text-[10px] tracking-[0.12em] font-medium uppercase">ARCHIVE</span>
         </Link>
       </div>
     </div>

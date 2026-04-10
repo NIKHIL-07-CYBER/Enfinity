@@ -1,4 +1,4 @@
-// DONE: Task 1-9 — ReadPage integrating all new features
+// DONE: Task 1-9 — ReadPage integrating all new features + Cognate Indicator + Zero-Chrome
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { TopNav } from '@/components/Layout/TopNav';
@@ -12,7 +12,7 @@ import { FocusModeButton } from '@/components/Reader/FocusModeButton';
 import { SelectionToolbar } from '@/components/Selection/SelectionToolbar';
 import { ChatbotAvatar } from '@/components/Chatbot/ChatbotAvatar';
 import { ChatbotPanel } from '@/components/Chatbot/ChatbotPanel';
-import { ReadingProgressBar } from '@/components/Reader/ReadingProgressBar';
+import { CognateIndicator } from '@/components/Reader/CognateIndicator';
 
 import { adaptationBus } from '@/utils/adaptationBus';
 import type { AdaptationEvent } from '@/types';
@@ -48,6 +48,7 @@ export const ReadPage: React.FC = () => {
   const [showBreak, setShowBreak] = useState(false);
   const burstActive = useUIStore(s => s.burstActive);
   const focusMode = useUIStore(s => s.focusMode);
+  const zeroChrome = useUIStore(s => s.zeroChrome);
   const summaryDrawerOpen = useUIStore((s) => s.summaryDrawerOpen);
   const setSummaryDrawerOpen = useUIStore((s) => s.setSummaryDrawerOpen);
   const currentDocument = useDocumentStore((s) => s.currentDocument);
@@ -105,15 +106,65 @@ export const ReadPage: React.FC = () => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
         e.preventDefault();
-        useUIStore.getState().toggleFocusMode();
+        if (useUIStore.getState().zeroChrome) {
+          useUIStore.getState().exitZeroChrome();
+        } else {
+          useUIStore.getState().enterZeroChrome();
+        }
       }
       if (e.key === 'Escape') {
+        if (useUIStore.getState().zeroChrome) {
+          useUIStore.getState().exitZeroChrome();
+        }
         useUIStore.getState().setSummaryDrawerOpen(false);
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
+
+  // Sync zero-chrome state with native fullscreen exit (Esc key exits fullscreen)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && useUIStore.getState().zeroChrome) {
+        useUIStore.getState().exitZeroChrome();
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Zero-chrome cursor auto-hide: hide cursor after 3s of no movement
+  useEffect(() => {
+    if (!zeroChrome) {
+      document.documentElement.classList.remove('cursor-hidden');
+      return;
+    }
+
+    let cursorTimer: number | undefined;
+
+    const handleMouseMove = () => {
+      document.documentElement.classList.remove('cursor-hidden');
+      if (cursorTimer) clearTimeout(cursorTimer);
+      cursorTimer = window.setTimeout(() => {
+        if (useUIStore.getState().zeroChrome) {
+          document.documentElement.classList.add('cursor-hidden');
+        }
+      }, 3000);
+    };
+
+    // Initial hide after 3s
+    cursorTimer = window.setTimeout(() => {
+      document.documentElement.classList.add('cursor-hidden');
+    }, 3000);
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (cursorTimer) clearTimeout(cursorTimer);
+      document.documentElement.classList.remove('cursor-hidden');
+    };
+  }, [zeroChrome]);
 
   useEffect(() => {
     return () => {
@@ -259,7 +310,16 @@ export const ReadPage: React.FC = () => {
       </ChromeShell>
       <SidebarNav activePage="reader" />
       
-      <main className="pl-[160px] pb-32 pt-24 w-full sm:pl-[160px] max-sm:pl-0 relative">
+      <main
+        className={`pb-32 w-full relative ${
+          zeroChrome
+            ? 'pl-0 pt-12'
+            : 'pl-[160px] pt-24 sm:pl-[160px] max-sm:pl-0'
+        }`}
+        style={{
+          transition: 'padding 500ms ease-in-out',
+        }}
+      >
         <ReadingContainer />
         <PermissionModePanel />
       </main>
@@ -271,6 +331,9 @@ export const ReadPage: React.FC = () => {
       <SelectionToolbar />
       <ManualHoverBox />
       <EyeStrainControl />
+
+      {/* Cognate Indicator */}
+      <CognateIndicator />
 
       {/* Task 5: Chatbot */}
       <ChatbotAvatar />
