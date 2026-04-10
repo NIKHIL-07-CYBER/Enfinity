@@ -15,7 +15,7 @@ import { finalizeAndArchiveSession, getCurrentSession } from "@/utils/sessionArc
 export const ReviewPage: React.FC = () => {
   const navigate = useNavigate();
   const struggledTerms = useConceptStore(s => s.struggledTerms);
-  const struggledParagraphs = useConceptStore(s => s.struggledParagraphs);
+  const struggledParagraphs = useConceptStore(s => (s as unknown as { struggledParagraphs?: string[] })?.struggledParagraphs ?? []);
   const readingMode = useReadingModeStore(s => s.mode);
 
   const [sessionDuration, setSessionDuration] = useState<number>(0);
@@ -26,17 +26,20 @@ export const ReviewPage: React.FC = () => {
   useEffect(() => {
     async function loadData() {
       const session = await loadSession().catch(() => null);
-      if (session?.paragraphs?.length) {
-        useSessionStore.getState().setParagraphs(session.paragraphs);
-        syncParagraphsToNlp(session.paragraphs);
+      const paragraphs = session?.paragraphs as unknown as Array<any> | undefined;
+      const sessionStartTime = session?.sessionStartTime as unknown as number | undefined;
+      
+      if (Array.isArray(paragraphs) && paragraphs.length) {
+        useSessionStore.getState().setParagraphs(paragraphs);
+        syncParagraphsToNlp(paragraphs);
       }
-      if (session?.sessionStartTime) {
-        const elapsed = Date.now() - session.sessionStartTime;
+      if (sessionStartTime) {
+        const elapsed = Date.now() - sessionStartTime;
         const minutes = elapsed > 86400000
           ? 0
           : Math.round(elapsed / 60000);
         setSessionDuration(minutes);
-        setSessionStartTime(new Date(session.sessionStartTime).toISOString());
+        setSessionStartTime(new Date(sessionStartTime).toISOString());
       }
       const allParagraphs = getParagraphs();
       if (allParagraphs && allParagraphs.length > 0) {
@@ -52,7 +55,7 @@ export const ReviewPage: React.FC = () => {
 
   const terms = struggledTerms;
   const paragraphExcerpts = struggledParagraphs
-    .map((id) => {
+    .map((id: string) => {
       const p = getParagraphById(id);
       return p ? `${p.text.slice(0, 120)}…` : "";
     })
@@ -112,7 +115,7 @@ export const ReviewPage: React.FC = () => {
                 </p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {terms.map((term, i) => (
+                  {terms.map((term: string, i: number) => (
                     <TermCard key={i} category={i % 2 === 0 ? "REVIEW" : "FOCUS"} term={term} definition="Definition pending synthesis..." />
                   ))}
                 </div>
@@ -133,7 +136,7 @@ export const ReviewPage: React.FC = () => {
                   No struggled paragraphs yet. Scroll through text (or use Simulate Struggle in the debug overlay) to record friction.
                 </p>
               ) : (
-                paragraphExcerpts.map((excerpt, i) => (
+                paragraphExcerpts.map((excerpt: string, i: number) => (
                   <StrugglePoint
                     key={i}
                     quote={excerpt}

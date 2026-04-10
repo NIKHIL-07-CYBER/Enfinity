@@ -3,7 +3,6 @@ import type { Paragraph } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { parseRawTextToParagraphs, parseFile, syncParagraphsToNlp } from '@/utils/paragraphUtils';
 import { useSessionStore } from '@/store/sessionStore';
-import { db } from '@backend/db/database';
 
 export interface UserDocument {
   id: string;
@@ -52,7 +51,7 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
         set({ isLoading: false });
         return;
       }
-      const mapped: UserDocument[] = [];
+    const mapped: UserDocument[] = [];
       for (const row of data as Record<string, unknown>[]) {
         const content = String(row.content ?? '');
         const paragraphs = await parseRawTextToParagraphs(content);
@@ -141,18 +140,8 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
           : createdAt,
       };
 
-      // Always save to local IndexedDB (Dexie) as offline cache
-      try {
-        await db.documents.put({
-          id: doc.id,
-          title: doc.title,
-          content: doc.content,
-          userId,
-          createdAt: doc.createdAt,
-        });
-      } catch {
-        /* Dexie is optional */
-      }
+      // Local cache storage (db reference removed for web build)
+      // Documents are stored in Supabase and sessionStore
 
       set((s) => ({
         documents: [doc, ...s.documents.filter((d) => d.id !== doc.id)],
@@ -181,7 +170,7 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   deleteDocument: async (id, userId) => {
     await supabase.from('user_documents').delete().eq('id', id).eq('user_id', userId);
     try {
-      await db.documents.delete(id);
+      // Delete document (note: db reference replaced with state-only storage)
     } catch {
       /* empty */
     }

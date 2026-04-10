@@ -36,7 +36,8 @@ import {
   useHighlightHesitation, 
   useTelemetryResume,
   TelemetryOverlay
-} from '@telemetry';
+} from '@/telemetry/components';
+import { useConceptStore } from '@/store/conceptStore';
 import { useDocumentPersistence } from '@/hooks/useDocumentPersistence';
 import { endReadingSession } from '@/utils/endReadingSession';
 import { SummaryPanel } from '@/components/Document/SummaryPanel';
@@ -178,7 +179,7 @@ export const ReadPage: React.FC = () => {
     let cancelled = false;
 
     async function restore() {
-      let session = await loadSession().catch(() => null);
+      let session: Record<string, unknown> | null = await loadSession().catch(() => null);
       if (!session) {
         const lastId = localStorage.getItem("last_paragraph_id");
         const lastY = localStorage.getItem("last_scroll_y");
@@ -194,29 +195,34 @@ export const ReadPage: React.FC = () => {
       }
       if (cancelled || !session) return;
 
-      if (session.paragraphs?.length) {
-        useSessionStore.getState().setParagraphs(session.paragraphs);
-        syncParagraphsToNlp(session.paragraphs);
+      const paragraphs = session.paragraphs as unknown as any[] | undefined
+      const sessionStartTime = session.sessionStartTime as unknown as number | undefined;
+      const lastParagraphId = session.lastParagraphId as unknown as string | undefined;
+      const scrollY = session.scrollY as unknown as number | undefined;
+
+      if (Array.isArray(paragraphs) && paragraphs.length) {
+        useSessionStore.getState().setParagraphs(paragraphs);
+        syncParagraphsToNlp(paragraphs);
         // Save article title for chatbot context
-        const title = session.paragraphs[0]?.text?.split('\n')[0] || 'Untitled';
+        const title = paragraphs[0]?.text?.split('\n')[0] || 'Untitled';
         localStorage.setItem('last_article_title', title);
       }
-      if (session.sessionStartTime) {
-        useSessionStore.getState().setSessionStartTime(session.sessionStartTime);
+      if (sessionStartTime) {
+        useSessionStore.getState().setSessionStartTime(sessionStartTime);
       }
 
       const scrollToSession = () => {
         const el = document.querySelector(
-          `[data-paragraph-id="${session.lastParagraphId}"]`,
+          `[data-paragraph-id="${lastParagraphId}"]`,
         );
         if (el) {
           el.scrollIntoView({ behavior: "instant", block: "start" });
         } else {
-          window.scrollTo({ top: session.scrollY, behavior: "instant" });
+          window.scrollTo({ top: scrollY ?? 0, behavior: "instant" });
         }
       };
 
-      setTimeout(scrollToSession, session.paragraphs?.length ? 200 : 0);
+      setTimeout(scrollToSession, Array.isArray(paragraphs) && paragraphs.length ? 200 : 0);
     }
 
     restore();

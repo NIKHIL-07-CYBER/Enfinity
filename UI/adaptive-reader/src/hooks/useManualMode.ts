@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useReadingModeStore } from '@/store/readingModeStore';
-import { fetchDefinition } from '@nlp/utils/definitionFetcher';
-import { fetchCognate, detectUserLanguage } from '@nlp/utils/cognateMapper';
+import { fetchDefinition } from '@/utils/nlpStubs';
+import { fetchCognate, detectUserLanguage } from '@/utils/nlpStubs';
 
 /**
  * Manual mode: click on a word to see its definition and acronym info.

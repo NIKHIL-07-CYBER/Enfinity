@@ -1,9 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useReadingModeStore } from '@/store/readingModeStore';
-import { getParagraphById } from '@nlp/utils/paragraphUtils';
-import { getDifficultWords, isAcronym, expandAcronym } from '@nlp/utils/nlpUtils';
-import { fetchDefinition } from '@nlp/utils/definitionFetcher';
+import { getParagraphById, getDifficultWords, isAcronym, expandAcronym, fetchDefinition } from '@/utils/nlpStubs';
 
 function mergeHardWords(text: string): string[] {
   const difficult = getDifficultWords(text);

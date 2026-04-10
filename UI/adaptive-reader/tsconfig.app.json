@@ -19,11 +19,7 @@
     /* Path alias */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@telemetry": ["../../telemetry/index.ts"],
-      "@telemetry/*": ["../../telemetry/*"],
-      "@backend/*": ["../../backend/src/*"],
-      "@nlp/*": ["../../nlp/src/*"]
+      "@/*": ["src/*"]
     },
 
     /* Linting — relaxed for cross-module dev */
@@ -34,14 +30,11 @@
     "noUncheckedSideEffectImports": true
   },
   "include": [
-    "src",
-    "../../telemetry/**/*.ts",
-    "../../telemetry/**/*.tsx",
-    "../../backend/src/**/*.ts",
-    "../../nlp/src/**/*.ts"
+    "src"
   ],
   "exclude": [
-    "../../telemetry/**/*.test.ts",
-    "../../backend/**/*.test.ts"
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/smoke.integration.test.ts"
   ]
 }

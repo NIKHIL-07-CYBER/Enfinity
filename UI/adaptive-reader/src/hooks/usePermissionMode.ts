@@ -34,14 +34,14 @@ export function usePermissionMode(): void {
     };
 
     let lastId = useTelemetryStore.getState().activeParagraphId;
-    schedule(lastId);
+    schedule(lastId ?? null);
 
     const unsub = useTelemetryStore.subscribe((state) => {
       const id = state.activeParagraphId;
       if (id === lastId) return;
       lastId = id;
       useReadingModeStore.getState().setPermissionPanel(null, false);
-      schedule(id);
+      schedule(id ?? null);
     });
 
     return () => {
