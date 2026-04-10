@@ -25,3 +25,4 @@ dist-ssr
 
 # Demo Assets
 !adaptive-reader-demo.mp4
+.vercel

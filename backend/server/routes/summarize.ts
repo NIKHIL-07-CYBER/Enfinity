@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import fetch from 'node-fetch';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 function extractiveSummary(text: string): string {
   const sentences = text
@@ -58,36 +59,27 @@ export function registerSummarizeRoutes(app: Express): void {
     }
 
     const clipped = String(text).slice(0, 4000);
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
-    if (apiKey) {
+    if (GOOGLE_AI_API_KEY) {
       try {
-        const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01',
-          },
-          body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 400,
-            system:
-              'You are an expert academic summarizer. Summarize the following text in 3-5 bullet points. Each bullet should be one clear sentence. Focus on key concepts, main arguments, and important terms. Do not include introduction or conclusion fluff.',
-            messages: [{ role: 'user', content: clipped }],
-          }),
+        const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
+        const model = genAI.getGenerativeModel({ 
+          model: "gemini-1.5-flash",
+          systemInstruction: 'You are an expert academic summarizer. Summarize the following text in 3-5 bullet points. Each bullet should be one clear sentence. Focus on key concepts, main arguments, and important terms. Do not include introduction or conclusion fluff.'
         });
-        if (apiRes.ok) {
-          const data = (await apiRes.json()) as {
-            content?: Array<{ type?: string; text?: string }>;
-          };
-          const block = data.content?.find((c) => c.type === 'text');
-          const summary = block?.text ?? '';
+
+        const result = await model.generateContent(clipped);
+        const response = await result.response;
+        const summary = response.text() || "";
+
+        if (summary) {
           await supabase.from('user_documents').update({ summary }).eq('id', documentId);
           return res.json({ summary });
         }
-      } catch {
-        /* fall through */
+      } catch (err) {
+        console.error('[SUMMARIZE] Google AI Error:', err);
+        /* fall through to extractive summary if AI fails */
       }
     }
 

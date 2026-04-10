@@ -1,0 +1,3 @@
+﻿src/pages/ArchivePage.tsx(39,27): error TS2339: Property 'date' does not exist on type 'ArchivedSession'.
+src/utils/sessionArchive.ts(82,50): error TS2339: Property 'words' does not exist on type 'Partial<ArchivedSession> & { startTime: string; mode?: string | undefined; title?: string | undefined; }'.
+src/utils/sessionArchive.ts(83,60): error TS2339: Property 'paragraphs' does not exist on type 'Partial<ArchivedSession> & { startTime: string; mode?: string | undefined; title?: string | undefined; }'.

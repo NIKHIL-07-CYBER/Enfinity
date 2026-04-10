@@ -1,0 +1,3 @@
+﻿src/hooks/useManualMode.ts(85,59): error TS2345: Argument of type '{ manualHoverLoading: boolean; }' is not assignable to parameter of type 'boolean'.
+src/hooks/useManualMode.ts(93,61): error TS2345: Argument of type '{ hoverDefinition: string; hoverTranslation: string | null; manualHoverLoading: boolean; }' is not assignable to parameter of type 'boolean'.
+src/hooks/useManualMode.ts(99,61): error TS2345: Argument of type '{ hoverDefinition: string; hoverTranslation: null; manualHoverLoading: boolean; }' is not assignable to parameter of type 'boolean'.

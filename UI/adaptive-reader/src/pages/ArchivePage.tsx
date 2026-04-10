@@ -52,20 +52,21 @@ export const ArchivePage: React.FC = () => {
 
         // Also load current session if available
         const session = await loadSession().catch(() => null);
-        if (session && session.paragraphs && session.paragraphs.length > 0) {
+        const sessionData = session as unknown as { paragraphs?: Array<{ text: string }>, id?: string, sessionStartTime?: number } | null;
+        if (sessionData && Array.isArray(sessionData.paragraphs) && sessionData.paragraphs.length > 0) {
           const title = localStorage.getItem('last_article_title') ||
-            (session.paragraphs?.[0]?.text?.split('\n')[0]?.slice(0, 60) || 'Reading in progress');
+            (sessionData.paragraphs?.[0]?.text?.split('\n')[0]?.slice(0, 60) || 'Reading in progress');
           loaded.unshift({
-            id: session.id || 'current',
+            id: (sessionData.id as string) || 'current',
             title,
-            date: session.sessionStartTime
-              ? new Date(session.sessionStartTime).toLocaleDateString('en-US', {
+            date: sessionData.sessionStartTime
+              ? new Date(sessionData.sessionStartTime).toLocaleDateString('en-US', {
                   month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
                 })
               : 'Unknown date',
-            paragraphCount: session.paragraphs?.length || 0,
-            sessionStartTime: session.sessionStartTime,
-            paragraphs: session.paragraphs,
+            paragraphCount: sessionData.paragraphs?.length || 0,
+            sessionStartTime: sessionData.sessionStartTime,
+            paragraphs: sessionData.paragraphs as any[],
           });
         }
         

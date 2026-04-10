@@ -5,7 +5,7 @@ import './styles/globals.css'
 import './styles/dark-overrides.css'
 import App from './App.tsx'
 // Side effect: registers adaptationBus listener for triggerAdaptation → UI adaptations
-import '@nlp/utils/adaptationEngine.ts'
+// NLP utilities are initialized locally
 
 initTheme()
 

@@ -3,16 +3,12 @@ builder = "NIXPACKS"
 buildCommand = "npm run build"
 
 [deploy]
-startCommand = "node dist/server/index.js"
+startCommand = "npm run start"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
 
 [env]
 PORT = "3001"
-# Add other environment variables here as needed
-# FRONTEND_URL = "..."
-# DATABASE_URL = "..."
-
-[watch]
-paths = ["backend/**"]
+FRONTEND_URL = "https://adaptive-reader.vercel.app"
+LIBRE_TRANSLATE_URL = "http://localhost:5000/translate"

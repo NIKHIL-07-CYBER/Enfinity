@@ -34,35 +34,6 @@
   --active-paragraph-bg: transparent;
 }
 
-html.dark,
-[data-theme="dark"],
-.dark-mode {
-  --bg-primary: #0f1117;
-  --bg-secondary: #17191f;
-  --bg-tertiary: #1e2130;
-  --text-primary: #edebe4;
-  --text-secondary: #9b9893;
-  --text-tertiary: #5e5c57;
-  --border-color: rgba(237, 235, 228, 0.11);
-  --border-hover: rgba(237, 235, 228, 0.22);
-  --bg-color: var(--bg-primary);
-  --text-color: var(--text-primary);
-  --sidebar-bg: var(--bg-secondary);
-  --nav-text: var(--text-secondary);
-  --card-border: var(--border-color);
-  --selection-bg: rgba(106, 171, 236, 0.22);
-  --toast-bg: rgba(15, 17, 23, 0.94);
-  --toolbar-surface: color-mix(in srgb, #17191f 90%, #6aabec 10%);
-  --toolbar-on-accent: #ffffff;
-}
-
-html.dark body,
-[data-theme="dark"] body,
-.dark-mode body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -79,29 +50,6 @@ body {
   box-sizing: border-box;
 }
 
-html.dark button,
-html.dark input,
-html.dark textarea,
-html.dark select,
-html.dark a,
-[data-theme="dark"] button,
-[data-theme="dark"] input,
-[data-theme="dark"] textarea,
-[data-theme="dark"] select,
-[data-theme="dark"] a,
-.dark-mode button,
-.dark-mode input,
-.dark-mode textarea,
-.dark-mode select,
-.dark-mode a {
-  color: var(--text-color);
-}
-
-html.dark ::placeholder,
-[data-theme="dark"] ::placeholder,
-.dark-mode ::placeholder {
-  color: var(--text-tertiary);
-}
 
 /* ═══════════════════════════════════════════════════  
    Z-INDEX HIERARCHY (Task 9a)
@@ -200,23 +148,7 @@ html.dark ::placeholder,
   pointer-events: auto !important;
 }
 
-/* Legacy theme classes — sync with themeManager (html.sepia / html.dark preferred) */
-.theme-sepia {
-  --bg-color: #f5f0e4;
-  --text-color: #3d3627;
-  --sidebar-bg: #ebe4d4;
-  --card-border: #d6ccba;
-}
-
-.theme-dark {
-  --bg-color: #1a1a1e;
-  --text-color: #d4d4d8;
-  --sidebar-bg: #232328;
-  --accent-blue-light: rgba(24, 95, 165, 0.12);
-  --nav-text: #71717a;
-  --card-border: #3f3f46;
-  --toast-bg: rgba(0, 0, 0, 0.92);
-}
+/* Dark/Sepia themes defined in dark-overrides.css — single source of truth */
 
 /* Highlight swatches for selection toolbar (no hex in TSX) */
 :root {

@@ -1,9 +1,9 @@
-import { supabase } from '../lib/supabase';
-import { useAuthStore } from '../store/authStore';
-import { useSessionStore } from '../store/sessionStore';
-import { useTelemetryStore } from '../store/telemetryStore';
-import { useConceptStore } from '@telemetry';
-import { useDocumentStore } from '../store/documentStore';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/store/authStore';
+import { useSessionStore } from '@/store/sessionStore';
+import { useTelemetryStore } from '@/store/telemetryStore';
+import { useConceptStore } from '@/store/conceptStore';
+import { useDocumentStore } from '@/store/documentStore';
 
 export async function endReadingSession(): Promise<void> {
   const user = useAuthStore.getState().user;
@@ -11,14 +11,13 @@ export async function endReadingSession(): Promise<void> {
 
   const startTime = useSessionStore.getState().sessionStartTime ?? Date.now();
   const duration = Math.max(0, Math.round((Date.now() - startTime) / 1000));
-  const struggleLog = useTelemetryStore.getState().struggleLog;
-  const paragraphsRead = Object.keys(struggleLog).length;
-  const cfsVals = Object.values(struggleLog);
+  const events = useTelemetryStore.getState().events;
+  const paragraphsRead = events.length;
+  const cfsVals = events.map(e => e.cfs);
   const avgCFS =
     cfsVals.reduce((a, b) => a + b, 0) / Math.max(1, cfsVals.length);
-  const latest = useTelemetryStore.getState().latestCFS;
-  const avgWPM = latest?.observedWPM ?? 0;
-  const activeParagraphId = useTelemetryStore.getState().activeParagraphId;
+  const avgWPM = 200; // Default WPM
+  const activeParagraphId = useSessionStore.getState().paragraphs[0]?.id;
   const doc = useDocumentStore.getState().currentDocument;
 
   if (!import.meta.env.VITE_SUPABASE_URL) return;
