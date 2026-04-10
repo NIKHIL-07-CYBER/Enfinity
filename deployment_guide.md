@@ -36,7 +36,7 @@ This guide provides step-by-step instructions for deploying the Enfinity adaptiv
 ## Backend Deployment (Railway)
 1. **New Project**: In Railway, click **New Project > Deploy from GitHub repo**.
 2. **Configure Environment Variables**:
-   - `PORT`: `3001` (or your preferred port)
+   - `PORT`: **Do not set this on Railway** (Railway injects `PORT` at runtime; the app already reads `process.env.PORT`).
    - `FRONTEND_URL`: The URL of your deployed Vercel frontend (e.g., `https://enfinity-ui.vercel.app`).
    - `ANTHROPIC_API_KEY`: Your Claude API key.
    - `SUPABASE_URL`: Your Supabase Project URL.

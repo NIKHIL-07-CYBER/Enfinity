@@ -9,7 +9,6 @@ healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
 
 [env]
-PORT = "3001"
 FRONTEND_URL = "https://adaptive-reader.vercel.app"
 NODE_ENV = "production"
 # Backend domain: https://enfinity-production.up.railway.app
