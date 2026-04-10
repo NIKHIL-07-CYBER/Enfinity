@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "UI/adaptive-reader",
-    "telemetry"
+    "telemetry",
+    "backend"
   ],
   "devDependencies": {
     "@types/node": "^25.5.2",
