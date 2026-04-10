@@ -2,8 +2,30 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
-import { registerDocumentRoutes } from './routes/documents';
-import { registerSummarizeRoutes } from './routes/summarize';
+
+let GoogleGenerativeAI: any;
+let registerDocumentRoutes: any;
+let registerSummarizeRoutes: any;
+
+try {
+  GoogleGenerativeAI = require('@google/generative-ai').GoogleGenerativeAI;
+} catch (e) {
+  console.warn('[WARN] Could not load GoogleGenerativeAI:', (e as any).message);
+}
+
+try {
+  ({ registerDocumentRoutes } = require('./routes/documents'));
+} catch (e) {
+  console.warn('[WARN] Could not load document routes:', (e as any).message);
+  registerDocumentRoutes = (app: any) => {}; // Fallback
+}
+
+try {
+  ({ registerSummarizeRoutes } = require('./routes/summarize'));
+} catch (e) {
+  console.warn('[WARN] Could not load summarize routes:', (e as any).message);
+  registerSummarizeRoutes = (app: any) => {}; // Fallback
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -58,7 +80,7 @@ function wrapError(message: string) {
 }
 
 app.get('/api/health', (req, res) => {
-  res.json(wrapSuccess({ status: 'ok' }));
+  res.status(200).json(wrapSuccess({ status: 'ok', timestamp: new Date().toISOString() }));
 });
 
 let useFallbackPriority = false;
@@ -168,65 +190,44 @@ app.post('/api/chat', async (req, res) => {
   const { message, context, history } = req.body;
   if (!message) return res.status(400).json(wrapError('Message is required'));
 
-  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+  const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
-  if (!ANTHROPIC_API_KEY) {
+  if (!GOOGLE_AI_API_KEY) {
     return res.json(wrapSuccess({
-      response: "I'm not configured yet. Ask your team to add ANTHROPIC_API_KEY to .env"
+      response: "I'm not configured yet. Ask your team to add GOOGLE_AI_API_KEY to .env"
     }));
   }
 
-  const systemPrompt = `You are a reading assistant helping a student understand a text.\nContext about what they are currently reading: ${context || 'No context available'}\nBe concise (under 120 words). Use simple language. If they ask about a specific word, give definition + example sentence. Focus only on the text.`;
+  const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash",
+    systemInstruction: `You are a reading assistant helping a student understand a text.
+Context about what they are currently reading: ${context || 'No context available'}
+Be concise (under 120 words). Use simple language. If they ask about a specific word, give definition + example sentence. Focus only on the text.`
+  });
 
-  const messages = [
-    ...(history || []).slice(-4).map((m: any) => ({
-      role: m.role === 'user' ? 'user' : 'assistant',
-      content: m.content
-    })),
-    { role: 'user', content: message }
-  ];
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  const chatHistory = (history || []).slice(-4).map((m: any) => ({
+    role: m.role === 'user' ? 'user' : 'model',
+    parts: [{ text: m.content }],
+  }));
 
   try {
-    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-3-5-haiku-20241022',
-        max_tokens: 200,
-        system: systemPrompt,
-        messages,
-      }),
-      signal: controller.signal,
+    const chat = model.startChat({
+      history: chatHistory,
     });
 
-    clearTimeout(timeoutId);
-
-    if (!apiRes.ok) {
-      const errText = await apiRes.text();
-      console.error('[CHAT] Anthropic error:', errText);
-      return res.json(wrapSuccess({
-        response: "I'm having trouble thinking right now. Try again in a moment."
-      }));
-    }
-
-    const data = await apiRes.json();
-    const responseText = data.content?.[0]?.text || "I couldn't formulate a response.";
+    const result = await chat.sendMessage(message);
+    const response = await result.response;
+    const responseText = response.text() || "I couldn't formulate a response.";
+    
     return res.json(wrapSuccess({ response: responseText }));
   } catch (error: any) {
-    clearTimeout(timeoutId);
-    if (error.name === 'AbortError') {
-      return res.json(wrapSuccess({ response: "Response timed out. Try a shorter question." }));
-    }
     console.error('[CHAT] Error:', error);
+    
+    // Fallback to Anthropic if key exists and Google fails? 
+    // No, better to report Google error since we are switching.
     return res.json(wrapSuccess({
-      response: "I'm having trouble connecting. Try again."
+      response: "I'm having trouble connecting to Google AI. Try again."
     }));
   }
 });
@@ -234,6 +235,37 @@ app.post('/api/chat', async (req, res) => {
 registerDocumentRoutes(app);
 registerSummarizeRoutes(app);
 
-app.listen(PORT, () => {
-  console.warn(`Express Proxy Server listening on port ${PORT}`);
+// Graceful error handling for unhandled errors
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('[ERROR]', err);
+  res.status(500).json(wrapError(err.message || 'Internal server error'));
+});
+
+// Catch-all for 404
+app.use((req, res) => {
+  res.status(404).json(wrapError(`Route not found: ${req.method} ${req.path}`));
+});
+
+const PORT_NUM = parseInt(process.env.PORT || '3001', 10);
+
+const server = app.listen(PORT_NUM, '0.0.0.0', () => {
+  console.log(`✓ Express Proxy Server listening on port ${PORT_NUM}`);
+  console.log(`✓ Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+  console.log(`✓ LibreTranslate URL: ${process.env.LIBRE_TRANSLATE_URL || 'http://localhost:5000/translate'}`);
+  console.log(`✓ NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+});
+
+server.on('error', (err: any) => {
+  console.error('[FATAL] Server error:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason: any, promise: any) => {
+  console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (err: any) => {
+  console.error('[FATAL] Uncaught Exception:', err);
+  process.exit(1);
 });

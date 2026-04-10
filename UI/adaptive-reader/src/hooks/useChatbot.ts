@@ -66,7 +66,8 @@ export function useChatbot() {
       }
 
       const data = await res.json();
-      const response = data.response || data.data?.response || "I couldn't process that. Try again.";
+      if (import.meta.env.DEV) console.log('[Chat] Response:', data);
+      const response = data.data?.response || data.response || "I couldn't process that. Try again.";
 
       useChatbotStore.getState().addMessage({
         id: crypto.randomUUID(),

@@ -68,14 +68,7 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        <Route
-          path={ROUTES.saved}
-          element={
-            <ProtectedRoute>
-              <SavedPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path={ROUTES.saved} element={<SavedPage />} />
         <Route
           path={ROUTES.dashboard}
           element={

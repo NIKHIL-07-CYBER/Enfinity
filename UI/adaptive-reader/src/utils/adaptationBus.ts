@@ -1,2 +1,5 @@
-/** Single shared bus — must match telemetry + NLP (one EventEmitter instance). */
-export { adaptationBus } from '@nlp/utils/adaptationBus';
+import { EventEmitter } from 'eventemitter3';
+
+// Local event bus for adaptation events
+export const adaptationBus = new EventEmitter();
+

@@ -8,6 +8,8 @@ export interface ArchivedSession {
   paragraphsRead: number;
   avgReadingSpeed: string;
   mode: string;
+  words?: number;
+  paragraphs?: number;
   insights: {
     totalTime: string;
     wordsRead: number;
