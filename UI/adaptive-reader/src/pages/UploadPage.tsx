@@ -8,8 +8,10 @@ import { useAuthStore } from '@/store/authStore';
 import { useDocumentStore, type UserDocument } from '@/store/documentStore';
 import { saveSession } from '@/utils/persistence';
 import { useSessionStore } from '@/store/sessionStore';
-import { syncParagraphsToNlp } from '@/utils/paragraphUtils';
+// Ensure this utility is correctly imported and returns Promise<Paragraph[]>
+import { parseFile } from '@/utils/paragraphUtils'; 
 import { SummaryPanel } from '@/components/Document/SummaryPanel';
+import { Paragraph } from '@/types'; // Import the shared interface
 
 export const UploadPage: React.FC = () => {
   const navigate = useNavigate();
@@ -37,11 +39,13 @@ export const UploadPage: React.FC = () => {
       navigate(ROUTES.auth);
       return;
     }
+    
+    // uploadDocument must return UserDocument or null, not void [cite: 13, 14]
     const doc = await uploadDocument(file, title || undefined, user.id);
+    
     if (doc) {
       if (doc.id.startsWith('local-')) {
-        // Supabase failed — saved locally only
-        toast.success('Saved locally (cloud sync unavailable — run schema.sql to fix)', { duration: 5000 });
+        toast.success('Saved locally (cloud sync unavailable)', { duration: 5000 });
       } else {
         toast.success('Saved to library');
       }
@@ -55,14 +59,65 @@ export const UploadPage: React.FC = () => {
     setCurrentDocument(doc);
     const sessionStartTime = Date.now();
     useSessionStore.getState().setSessionStartTime(sessionStartTime);
+    
+    // Verification: Ensure paragraphs exist before accessing ID 
+    const firstParaId = doc.paragraphs && doc.paragraphs.length > 0 
+      ? doc.paragraphs.id 
+      : '';
+
     void saveSession({
-      lastParagraphId: doc.lastReadParagraphId || doc.paragraphs[0]?.id || '',
+      lastParagraphId: doc.lastReadParagraphId || firstParaId,
       scrollY: doc.lastScrollY ?? 0,
       appliedAdaptations: [],
       sessionStartTime,
-      paragraphs: doc.paragraphs,
+      paragraphs: doc.paragraphs || [],
     });
     navigate(ROUTES.read);
+  };
+
+  // Helper to handle text parsing for the "Paste" feature
+  const handleStartReading = async () => {
+    const text = paste.trim();
+    if (!text) return;
+
+    try {
+      // Create a mock File object to reuse your existing parseFile logic 
+      const mockFile = new File([text], "pasted-text.txt", { type: "text/plain" });
+      const paragraphs: Paragraph[] = await parseFile(mockFile);
+
+      if (!paragraphs || paragraphs.length === 0) {
+        toast.error("Could not parse text into paragraphs");
+        return;
+      }
+
+      const tempDoc: UserDocument = {
+        id: `temp-${Date.now()}`,
+        title: title || text.slice(0, 30) + "...",
+        content: text,
+        userId: user?.id || 'anonymous',
+        createdAt: new Date().toISOString(),
+        wordCount: text.split(/\s+/).length,
+        paragraphCount: paragraphs.length,
+        paragraphs: paragraphs
+      };
+
+      setCurrentDocument(tempDoc);
+      const sessionStartTime = Date.now();
+      useSessionStore.getState().setSessionStartTime(sessionStartTime);
+      
+      void saveSession({
+        lastParagraphId: paragraphs.id,
+        scrollY: 0,
+        appliedAdaptations: [],
+        sessionStartTime,
+        paragraphs: paragraphs,
+      });
+      
+      navigate(ROUTES.read);
+    } catch (error) {
+      toast.error("Error processing text");
+      console.error(error);
+    }
   };
 
   return (
@@ -72,7 +127,7 @@ export const UploadPage: React.FC = () => {
     >
       <TopNav />
 
-      <main className="w-full flex-1 flex flex-col items-center pt-24 pb-8 px-4 max-w-6xl mx-auto w-full">
+      <main className="w-full flex-1 flex flex-col items-center pt-24 pb-8 px-4 max-w-6xl mx-auto">
         <h1
           className="text-4xl md:text-[54px] mb-4 text-center max-w-full px-4"
           style={{ fontFamily: 'var(--font-ui)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}
@@ -118,7 +173,7 @@ export const UploadPage: React.FC = () => {
                     borderColor: 'var(--border-color)',
                     color: 'var(--text-primary)',
                   }}
-                  placeholder="Paste article text here and click 'Start Reading'…"
+                  placeholder="Paste article text here..."
                   value={paste}
                   onChange={(e) => setPaste(e.target.value)}
                 />
@@ -129,43 +184,10 @@ export const UploadPage: React.FC = () => {
                   style={{
                     backgroundColor: paste.trim() ? 'var(--accent-blue)' : 'var(--bg-secondary)',
                     color: paste.trim() ? 'white' : 'var(--text-tertiary)',
-                    border: 'none',
                     cursor: paste.trim() ? 'pointer' : 'not-allowed',
                     opacity: paste.trim() ? 1 : 0.6
                   }}
-                  onClick={async () => {
-                    const text = paste.trim();
-                    if (!text) return;
-
-                    const paragraphs = await syncParagraphsToNlp(text);
-                    if (!paragraphs.length) {
-                      toast.error("Could not parse text into paragraphs");
-                      return;
-                    }
-
-                    const tempDoc: UserDocument = {
-                      id: `temp-${Date.now()}`,
-                      title: title || text.slice(0, 30) + "...",
-                      content: text,
-                      userId: user?.id || 'anonymous',
-                      createdAt: new Date().toISOString(),
-                      wordCount: text.split(/\s+/).length,
-                      paragraphCount: paragraphs.length,
-                      paragraphs: paragraphs
-                    };
-
-                    setCurrentDocument(tempDoc);
-                    const sessionStartTime = Date.now();
-                    useSessionStore.getState().setSessionStartTime(sessionStartTime);
-                    void saveSession({
-                      lastParagraphId: paragraphs[0].id,
-                      scrollY: 0,
-                      appliedAdaptations: [],
-                      sessionStartTime,
-                      paragraphs: paragraphs,
-                    });
-                    navigate(ROUTES.read);
-                  }}
+                  onClick={handleStartReading}
                 >
                   Start Reading
                 </button>
@@ -182,6 +204,7 @@ export const UploadPage: React.FC = () => {
                 {documents.length}
               </span>
             </div>
+            
             {isLoading ? (
               <div className="space-y-2">
                 <div className="h-16 rounded-lg animate-pulse" style={{ background: 'var(--bg-secondary)' }} />
@@ -190,37 +213,6 @@ export const UploadPage: React.FC = () => {
             ) : documents.length === 0 ? (
               <div className="text-sm min-h-[160px] flex flex-col items-center justify-center gap-4 text-center p-6 border-2 border-dashed rounded-xl" style={{ borderColor: 'var(--border-color)', color: 'var(--text-tertiary)' }}>
                 <p>Your library is empty. Upload a document or try our sample article.</p>
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-lg font-bold text-xs tracking-widest uppercase transition-all"
-                  style={{ background: 'var(--accent-blue-bg)', color: 'var(--accent-blue)' }}
-                  onClick={async () => {
-                    const sampleText = `The Future of Reading\n\nReading is changing faster than ever. In the digital age, our attention is constantly being pulled in multiple directions. The goal of this reader is to provide a focused, adaptive experience that responds to your cognitive needs.\n\nBy tracking how you interact with text, we can identify when you are struggling and provide real-time linguistic support. This isn't just a reader; it's a partner in your learning journey.`;
-                    const paragraphs = await syncParagraphsToNlp(sampleText);
-                    const doc: UserDocument = {
-                      id: 'sample-doc',
-                      title: 'The Future of Reading (Sample)',
-                      content: sampleText,
-                      paragraphs,
-                      wordCount: sampleText.split(/\s+/).length,
-                      paragraphCount: paragraphs.length,
-                      createdAt: new Date().toISOString(),
-                    };
-                    setCurrentDocument(doc);
-                    const startTime = Date.now();
-                    useSessionStore.getState().setSessionStartTime(startTime);
-                    void saveSession({
-                      lastParagraphId: paragraphs[0].id,
-                      scrollY: 0,
-                      appliedAdaptations: [],
-                      sessionStartTime: startTime,
-                      paragraphs: paragraphs,
-                    });
-                    navigate(ROUTES.read);
-                  }}
-                >
-                  Load Sample Article
-                </button>
               </div>
             ) : (
               <ul className="space-y-3">
@@ -253,16 +245,6 @@ export const UploadPage: React.FC = () => {
                       >
                         Summarize
                       </button>
-                      {user && (
-                        <button
-                          type="button"
-                          className="text-xs px-2 py-1 rounded-md"
-                          style={{ color: 'var(--text-tertiary)' }}
-                          onClick={() => void deleteDocument(doc.id, user.id)}
-                        >
-                          Delete
-                        </button>
-                      )}
                     </div>
                     <div className="mt-3 border-t pt-3" style={{ borderColor: 'var(--border-color)' }}>
                       <SummaryPanel doc={doc} />
@@ -271,22 +253,11 @@ export const UploadPage: React.FC = () => {
                 ))}
               </ul>
             )}
-            {isUploading && (
-              <div className="flex items-center gap-2 mt-3">
-                <span
-                  className="inline-block w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"
-                  style={{ borderColor: 'var(--accent-blue)', borderTopColor: 'transparent' }}
-                />
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Saving to library…
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </main>
 
-      <footer className="mt-auto pt-16 text-[11px] tracking-widest font-bold" style={{ color: 'var(--nav-text)' }}>
+      <footer className="mt-auto pt-16 text-[11px] tracking-widest font-bold text-center" style={{ color: 'var(--nav-text)' }}>
         END OF STREAM • THE LIVING MANUSCRIPT
       </footer>
     </div>
