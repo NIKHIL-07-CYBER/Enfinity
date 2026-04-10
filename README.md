@@ -1,6 +1,6 @@
-# 📡 Enfinity — Distraction-Free Adaptive Reader
+# 📡 Briefly — Distraction-Free Adaptive Reader
 
-Enfinity is a modern, distraction-free reading platform that uses a real-time **Comprehension Friction Score (CFS)** engine to monitor reader engagement and dynamically adapt content to improve understanding.
+Briefly is a modern, distraction-free reading platform that uses a real-time **Comprehension Friction Score (CFS)** engine to monitor reader engagement and dynamically adapt content to improve understanding.
 
 ## 🚀 Key Features
 
@@ -53,7 +53,7 @@ Struggle Signal Detected (CFS > 1.5)
 
 ## 💾 Persistence Layer
 
-Enfinity implements a **Local-First** architecture to ensure zero data loss:
+Briefly implements a **Local-First** architecture to ensure zero data loss:
 - **Primary Storage**: `IndexedDB` (via Dexie.js) for telemetry, adaptations, and session state.
 - **Fallback**: `localStorage` during `beforeunload` events.
 - **Recovery**: Automatic "Multi-Layer Recovery" on hard refreshes, restoring scroll position within 150ms.
@@ -140,12 +140,19 @@ Three distinct modes selectable in the navbar:
 - Resume reading from exactly where you left off
 - Progress bar shows how far through each document you've read
 
-### AI document summaries
+### AI document summaries & Chat Assistant
 
 - Generate a summary of any saved document
 - Define a start and end paragraph range for focused summarization
 - Bullet-point format — key concepts extracted in seconds
-- Powered by Claude Haiku (or extractive fallback when API key absent)
+- Built-in Reading Assistant chatbot to explain paragraphs.
+- Powered by Google Gemini 2.5 Flash (or extractive fallback when API key absent)
+
+### Advanced UX Features
+
+- **Zero-Chrome Reading UI:** Complete immersive mode that auto-hides navigation and menus to leave absolutely nothing but the text.
+- **Contextual Concept Graph:** Maps the specific terms and paragraphs struggled with during a session.
+- **Eye Strain Controls:** Adjustable visual settings for comfortable long-form reading.
 
 ### Reading analytics dashboard (`/dashboard`)
 
@@ -165,8 +172,8 @@ Three distinct modes selectable in the navbar:
 ## Environment setup
 
 ```bash
-# Required for AI features:
-ANTHROPIC_API_KEY=sk-ant-...    # Claude Haiku for chat + summaries
+# Required for AI features (Chat & Summarization):
+GOOGLE_AI_API_KEY=AIzaSy...    # Google Gemini 2.5 Flash API Key
 
 # Required for user accounts:
 VITE_SUPABASE_URL=https://...
