@@ -9,25 +9,7 @@ import { registerSummarizeRoutes } from './routes/summarize';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// CORS Hardening
-const allowedOrigins = [
-  'http://localhost:5173', 
-  'http://localhost:5174', 
-  'http://localhost:5175', 
-  'http://localhost:3000',
-  'https://dashing-nougat-c66726.netlify.app',
-  process.env.FRONTEND_URL || 'https://your-vercel-frontend-url.vercel.app'
-];
-
-app.use(cors({ 
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Strict CORS restriction'));
-    }
-  } 
-}));
+app.use(cors());
 app.use(express.json());
 
 // The generalized `cors()` module governs preflight handling and authorized domains.
