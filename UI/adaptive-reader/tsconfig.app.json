@@ -19,7 +19,7 @@
     /* Path alias */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["./src/*"],
       "@telemetry": ["../../telemetry/index.ts"],
       "@telemetry/*": ["../../telemetry/*"],
       "@backend/*": ["../../backend/src/*"],
