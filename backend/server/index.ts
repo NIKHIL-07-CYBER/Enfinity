@@ -1,4 +1,7 @@
 import 'dotenv/config';
+if (typeof global.DOMMatrix === 'undefined') {
+  (global as any).DOMMatrix = class DOMMatrix {};
+}
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
